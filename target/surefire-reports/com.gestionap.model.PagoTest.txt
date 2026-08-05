@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.gestionap.model.PagoTest
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.gestionap.model.PagoTest
