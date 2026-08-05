@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <!-- ============================================================
+         Tipos simples reutilizables con restricciones de dominio
+    ============================================================ -->
+
+    <!-- DNI español: 8 dígitos seguidos de una letra mayúscula -->
+    <xs:simpleType name="tipoDni">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{8}[A-Z]"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Email con formato básico: algo@algo.algo -->
+    <xs:simpleType name="tipoEmail">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^@\s]+@[^@\s]+\.[^@\s]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Estado de una habitación: solo valores permitidos del sistema -->
+    <xs:simpleType name="tipoEstado">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="disponible"/>
+            <xs:enumeration value="alquilada"/>
+            <xs:enumeration value="mantenimiento"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Precio con mínimo de 100 € -->
+    <xs:simpleType name="tipoPrecio">
+        <xs:restriction base="xs:decimal">
+            <xs:minInclusive value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ============================================================
+         Tipos complejos
+    ============================================================ -->
+
+    <xs:complexType name="tipoPiso">
+        <xs:sequence>
+            <xs:element name="direccion" type="xs:string"/>
+            <xs:element name="ciudad"    type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="tipoHabitacion">
+        <xs:sequence>
+            <xs:element name="numero" type="xs:integer"/>
+            <xs:element name="precio" type="tipoPrecio"/>
+            <xs:element name="estado" type="tipoEstado"/>
+            <xs:element name="piso"   type="tipoPiso"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="tipoInquilino">
+        <xs:sequence>
+            <xs:element name="nombre"    type="xs:string"/>
+            <xs:element name="apellidos" type="xs:string"/>
+            <xs:element name="dni"       type="tipoDni"/>
+            <xs:element name="telefono"  type="xs:string"/>
+            <xs:element name="email"     type="tipoEmail"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="tipoContrato">
+        <xs:sequence>
+            <xs:element name="fechaInicio"    type="xs:date"/>
+            <xs:element name="fechaFin"       type="xs:date"/>
+            <xs:element name="precioMensual"  type="tipoPrecio"/>
+            <xs:element name="inquilino"      type="tipoInquilino"/>
+            <xs:element name="habitacion"     type="tipoHabitacion"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required"/>
+    </xs:complexType>
+
+    <!-- ============================================================
+         Elemento raíz: mínimo 1 contrato, sin límite superior
+    ============================================================ -->
+
+    <xs:element name="contratos">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="contrato" type="tipoContrato"
+                            minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

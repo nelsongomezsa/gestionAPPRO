@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gestionap.controller.PerfilController"
+      VBox.vgrow="ALWAYS"
+      styleClass="content-area"
+      stylesheets="@styles.css">
+
+    <HBox styleClass="page-header" spacing="12" alignment="CENTER_LEFT">
+        <Button fx:id="btnVolver" text="&#8592;  Volver" styleClass="btn-secondary"/>
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label text="Mi Perfil" styleClass="page-title"/>
+            <Label text="Información, estadísticas y ajustes de tu cuenta" styleClass="page-subtitle"/>
+        </VBox>
+    </HBox>
+
+    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="content-body" spacing="20">
+
+            <!-- Avatar + datos + cerrar sesión -->
+            <HBox spacing="20" alignment="TOP_LEFT">
+
+                <!-- Tarjeta: Información de cuenta -->
+                <VBox styleClass="stat-card" spacing="14" HBox.hgrow="ALWAYS">
+                    <Label text="INFORMACIÓN DE CUENTA" styleClass="form-section-title"/>
+                    <HBox spacing="20" alignment="CENTER_LEFT">
+                        <Label fx:id="lblIniciales" text="?"
+                               styleClass="sidebar-user-avatar"
+                               style="-fx-min-width:72;-fx-min-height:72;-fx-max-width:72;-fx-max-height:72;-fx-font-size:24px;"/>
+                        <VBox spacing="6">
+                            <Label fx:id="lblNombre" text="—"
+                                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #e8e8f8;"/>
+                            <Label fx:id="lblEmail" text="—" styleClass="form-label"
+                                   style="-fx-font-size: 13px;"/>
+                            <Label fx:id="lblRol" text="—"/>
+                        </VBox>
+                    </HBox>
+                    <Button fx:id="btnCerrarSesion"
+                            text="&#8617;  Cerrar Sesión"
+                            styleClass="btn-danger"
+                            prefWidth="180"/>
+                </VBox>
+
+                <!-- Tarjeta: Estadísticas personales -->
+                <VBox styleClass="stat-card" spacing="14" HBox.hgrow="ALWAYS">
+                    <Label text="MIS ESTADÍSTICAS" styleClass="form-section-title"/>
+                    <HBox spacing="14">
+                        <VBox styleClass="stat-card, card-teal" spacing="4" prefWidth="120">
+                            <Label fx:id="lblContratosCreados" text="0" styleClass="stat-card-value"
+                                   style="-fx-font-size:28px;"/>
+                            <Label text="CONTRATOS" styleClass="stat-card-title"/>
+                        </VBox>
+                        <VBox styleClass="stat-card, card-green" spacing="4" prefWidth="120">
+                            <Label fx:id="lblPagosRegistrados" text="0" styleClass="stat-card-value"
+                                   style="-fx-font-size:28px;"/>
+                            <Label text="PAGOS" styleClass="stat-card-title"/>
+                        </VBox>
+                        <VBox styleClass="stat-card, card-orange" spacing="4" prefWidth="120">
+                            <Label fx:id="lblIncidenciasResueltas" text="0" styleClass="stat-card-value"
+                                   style="-fx-font-size:28px;"/>
+                            <Label text="INCIDENCIAS" styleClass="stat-card-title"/>
+                        </VBox>
+                        <VBox styleClass="stat-card, card-purple" spacing="4" prefWidth="120">
+                            <Label fx:id="lblTotalAcciones" text="0" styleClass="stat-card-value"
+                                   style="-fx-font-size:28px;"/>
+                            <Label text="ACCIONES" styleClass="stat-card-title"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+            </HBox>
+
+            <!-- Fila: editar datos + cambiar contraseña -->
+            <HBox spacing="20" alignment="TOP_LEFT">
+
+                <!-- Tarjeta: Editar nombre y email -->
+                <VBox styleClass="stat-card" spacing="14" HBox.hgrow="ALWAYS">
+                    <Label text="EDITAR DATOS DE CUENTA" styleClass="form-section-title"/>
+                    <GridPane hgap="16" vgap="12">
+                        <Label text="Nombre:" styleClass="form-label"
+                               GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <TextField fx:id="tfNombreEditar" prefWidth="260"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="Email:" styleClass="form-label"
+                               GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <TextField fx:id="tfEmailEditar" prefWidth="260"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    </GridPane>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Button fx:id="btnGuardarPerfil"
+                                text="&#128190;  Guardar Datos"
+                                styleClass="btn-primary"/>
+                        <Label fx:id="lblMensajePerfil" text=""
+                               managed="false" visible="false" wrapText="true" maxWidth="280"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Tarjeta: Cambiar contraseña -->
+                <VBox styleClass="stat-card" spacing="14" HBox.hgrow="ALWAYS">
+                    <Label text="CAMBIAR CONTRASEÑA" styleClass="form-section-title"/>
+                    <GridPane hgap="16" vgap="12">
+                        <Label text="Actual:" styleClass="form-label"
+                               GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <PasswordField fx:id="pfActual" prefWidth="260"
+                                       promptText="Contraseña actual"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="Nueva:" styleClass="form-label"
+                               GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <PasswordField fx:id="pfNueva" prefWidth="260"
+                                       promptText="Mínimo 6 caracteres"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Confirmar:" styleClass="form-label"
+                               GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <PasswordField fx:id="pfConfirmar" prefWidth="260"
+                                       promptText="Repite la nueva contraseña"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    </GridPane>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Button fx:id="btnGuardarPassword"
+                                text="&#128190;  Guardar Contraseña"
+                                styleClass="btn-primary"/>
+                        <Label fx:id="lblMensajePassword" text=""
+                               managed="false" visible="false" wrapText="true" maxWidth="280"/>
+                    </HBox>
+                </VBox>
+
+            </HBox>
+
+            <!-- Tarjeta: Historial de actividad -->
+            <VBox styleClass="stat-card" spacing="14">
+                <Label text="HISTORIAL DE ACTIVIDAD RECIENTE" styleClass="form-section-title"/>
+                <VBox fx:id="vboxHistorial" spacing="6">
+                    <Label text="Cargando historial..." styleClass="info-label"/>
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+</VBox>

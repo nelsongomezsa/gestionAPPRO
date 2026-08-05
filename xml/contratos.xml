@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contratos xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="esquema.xsd">
+
+    <contrato id="1">
+        <fechaInicio>2024-01-01</fechaInicio>
+        <fechaFin>2024-12-31</fechaFin>
+        <precioMensual>450.00</precioMensual>
+        <inquilino id="1">
+            <nombre>Juan</nombre>
+            <apellidos>Pérez García</apellidos>
+            <dni>12345678A</dni>
+            <telefono>612000001</telefono>
+            <email>juan.perez@email.com</email>
+        </inquilino>
+        <habitacion id="1">
+            <numero>1</numero>
+            <precio>450.00</precio>
+            <estado>alquilada</estado>
+            <piso id="1">
+                <direccion>Calle Mayor 10, 3º A</direccion>
+                <ciudad>Madrid</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+    <contrato id="2">
+        <fechaInicio>2024-02-01</fechaInicio>
+        <fechaFin>2025-01-31</fechaFin>
+        <precioMensual>500.00</precioMensual>
+        <inquilino id="2">
+            <nombre>María</nombre>
+            <apellidos>López Martínez</apellidos>
+            <dni>87654321B</dni>
+            <telefono>612000002</telefono>
+            <email>maria.lopez@email.com</email>
+        </inquilino>
+        <habitacion id="4">
+            <numero>1</numero>
+            <precio>500.00</precio>
+            <estado>alquilada</estado>
+            <piso id="2">
+                <direccion>Gran Via 20, 2º B</direccion>
+                <ciudad>Madrid</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+    <contrato id="3">
+        <fechaInicio>2024-03-01</fechaInicio>
+        <fechaFin>2025-02-28</fechaFin>
+        <precioMensual>480.00</precioMensual>
+        <inquilino id="3">
+            <nombre>Carlos</nombre>
+            <apellidos>Ruiz Fernández</apellidos>
+            <dni>11223344C</dni>
+            <telefono>612000003</telefono>
+            <email>carlos.ruiz@email.com</email>
+        </inquilino>
+        <habitacion id="5">
+            <numero>2</numero>
+            <precio>480.00</precio>
+            <estado>alquilada</estado>
+            <piso id="2">
+                <direccion>Gran Via 20, 2º B</direccion>
+                <ciudad>Madrid</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+    <contrato id="4">
+        <fechaInicio>2024-01-15</fechaInicio>
+        <fechaFin>2025-01-14</fechaFin>
+        <precioMensual>600.00</precioMensual>
+        <inquilino id="4">
+            <nombre>Ana</nombre>
+            <apellidos>Sánchez Torres</apellidos>
+            <dni>44332211D</dni>
+            <telefono>612000004</telefono>
+            <email>ana.sanchez@email.com</email>
+        </inquilino>
+        <habitacion id="8">
+            <numero>1</numero>
+            <precio>600.00</precio>
+            <estado>alquilada</estado>
+            <piso id="3">
+                <direccion>Passeig de Gràcia 45</direccion>
+                <ciudad>Barcelona</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+    <contrato id="5">
+        <fechaInicio>2024-04-01</fechaInicio>
+        <fechaFin>2025-03-31</fechaFin>
+        <precioMensual>590.00</precioMensual>
+        <inquilino id="5">
+            <nombre>Luis</nombre>
+            <apellidos>Moreno Díaz</apellidos>
+            <dni>55667788E</dni>
+            <telefono>612000005</telefono>
+            <email>luis.moreno@email.com</email>
+        </inquilino>
+        <habitacion id="10">
+            <numero>3</numero>
+            <precio>590.00</precio>
+            <estado>alquilada</estado>
+            <piso id="3">
+                <direccion>Passeig de Gràcia 45</direccion>
+                <ciudad>Barcelona</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+    <contrato id="6">
+        <fechaInicio>2023-06-01</fechaInicio>
+        <fechaFin>2024-05-31</fechaFin>
+        <precioMensual>380.00</precioMensual>
+        <inquilino id="6">
+            <nombre>Sara</nombre>
+            <apellidos>Jiménez Navarro</apellidos>
+            <dni>88776655F</dni>
+            <telefono>612000006</telefono>
+            <email>sara.jimenez@email.com</email>
+        </inquilino>
+        <habitacion id="11">
+            <numero>1</numero>
+            <precio>380.00</precio>
+            <estado>alquilada</estado>
+            <piso id="4">
+                <direccion>Avenida del Puerto 12</direccion>
+                <ciudad>Valencia</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+</contratos>

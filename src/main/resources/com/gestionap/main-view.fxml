@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.gestionap.controller.MainController"
+            fx:id="borderPane"
+            styleClass="content-area"
+            stylesheets="@styles.css">
+
+    <!-- SIDEBAR -->
+    <left>
+        <VBox styleClass="sidebar">
+
+            <HBox styleClass="sidebar-header" alignment="CENTER_LEFT" spacing="12">
+                <Label text="&#127968;" styleClass="sidebar-app-icon"/>
+                <Label text="GestionAp"  styleClass="sidebar-app-name"/>
+            </HBox>
+
+            <Label text="PRINCIPAL" styleClass="sidebar-section-label"/>
+            <Button fx:id="btnDashboard"    text="&#128202;  Dashboard"    styleClass="sidebar-nav-btn, active"/>
+            <Button fx:id="btnHabitaciones" text="&#127968;  Habitaciones" styleClass="sidebar-nav-btn"/>
+            <Button fx:id="btnInquilinos"   text="&#128101;  Inquilinos"   styleClass="sidebar-nav-btn"/>
+            <Button fx:id="btnContratos"    text="&#128203;  Contratos"    styleClass="sidebar-nav-btn"/>
+
+            <Label text="FINANZAS" styleClass="sidebar-section-label"/>
+            <Button fx:id="btnPagos"          text="&#128179;  Pagos"          styleClass="sidebar-nav-btn"/>
+            <Button fx:id="btnCalendario"     text="&#128197;  Calendario"     styleClass="sidebar-nav-btn"/>
+            <Button fx:id="btnRentabilidad"   text="&#128200;  Rentabilidad"   styleClass="sidebar-nav-btn"/>
+            <Button fx:id="btnAnalisisPisos"  text="&#128202;  Mis Pisos"      styleClass="sidebar-nav-btn"/>
+
+            <Label text="OPERACIONES" styleClass="sidebar-section-label"/>
+            <Button fx:id="btnIncidencias"  text="&#128295;  Incidencias"  styleClass="sidebar-nav-btn"/>
+            <Button fx:id="btnEstadisticas" text="&#128202;  Estadísticas" styleClass="sidebar-nav-btn"/>
+
+            <Label text="ADMINISTRACIÓN" styleClass="sidebar-section-label"/>
+            <Button fx:id="btnUsuarios"     text="&#128101;  Usuarios"     styleClass="sidebar-nav-btn"/>
+
+            <Label text="CUENTA" styleClass="sidebar-section-label"/>
+            <Button fx:id="btnPerfil"       text="&#128100;  Mi Perfil"    styleClass="sidebar-nav-btn"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+            <Region styleClass="sidebar-divider"/>
+
+            <HBox styleClass="sidebar-user-box" alignment="CENTER_LEFT" spacing="12">
+                <Label fx:id="lblIniciales" styleClass="sidebar-user-avatar" text="A"/>
+                <VBox spacing="2">
+                    <Label fx:id="lblUsuarioNombre" text="Administrador" styleClass="sidebar-username"/>
+                    <Label fx:id="lblUsuarioRol"    text="admin"
+                           styleClass="sidebar-user-role badge badge-admin"/>
+                </VBox>
+            </HBox>
+
+            <Button fx:id="btnCerrarSesion"
+                    text="&#8617;  Cerrar Sesión"
+                    styleClass="sidebar-logout-btn"/>
+
+        </VBox>
+    </left>
+
+    <!-- CONTENIDO CENTRAL -->
+    <center>
+        <VBox>
+            <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="10">
+                <Button fx:id="btnAtras"
+                        text="&#8592;  Atrás"
+                        styleClass="btn-secondary"
+                        visible="false"
+                        managed="false"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtBusquedaGlobal"
+                           promptText="&#128269;  Buscar inquilino por nombre o DNI..."
+                           styleClass="search-field"
+                           prefWidth="260"/>
+                <StackPane>
+                    <Button fx:id="btnNotificaciones"
+                            text="&#128276;"
+                            styleClass="btn-secondary"
+                            prefWidth="42"/>
+                    <Label fx:id="lblBadgeNotif"
+                           text="0"
+                           styleClass="notification-badge"
+                           visible="false"
+                           StackPane.alignment="TOP_RIGHT"/>
+                </StackPane>
+                <Button fx:id="btnToggleTema"
+                        text="&#9788;  Tema Claro"
+                        styleClass="btn-secondary"/>
+            </HBox>
+            <StackPane fx:id="panelCentro" styleClass="content-area" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </center>
+
+</BorderPane>

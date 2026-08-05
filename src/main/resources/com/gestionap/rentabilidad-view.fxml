@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gestionap.controller.RentabilidadController"
+      VBox.vgrow="ALWAYS"
+      styleClass="content-area"
+      stylesheets="@styles.css">
+
+    <VBox styleClass="page-header" spacing="4">
+        <Label text="Calculadora de Rentabilidad" styleClass="page-title"/>
+        <Label text="Análisis completo de inversión inmobiliaria — recalculo en tiempo real" styleClass="page-subtitle"/>
+    </VBox>
+
+    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="content-body" spacing="20">
+
+            <HBox spacing="20" alignment="TOP_LEFT">
+
+                <!-- ═══════════════ COLUMNA IZQUIERDA ═══════════════ -->
+                <VBox spacing="16" HBox.hgrow="ALWAYS">
+
+                    <!-- LOCALIZACIÓN -->
+                    <VBox styleClass="stat-card" spacing="12">
+                        <Label text="&#128205;  LOCALIZACIÓN DE LA VIVIENDA" styleClass="form-section-title"/>
+                        <GridPane hgap="14" vgap="10">
+                            <Label text="Dirección de la vivienda:"  styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="tfDireccion" prefWidth="260"
+                                       promptText="Calle, número, ciudad..."
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="Comunidad Autónoma:"        styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <ComboBox fx:id="cmbComunidad" prefWidth="260"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="ITP aplicable:"             styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <Label fx:id="lblItpPorcentaje" text="—"
+                                   style="-fx-text-fill: #a89fff; -fx-font-size: 14px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- COSTE COMPRA -->
+                    <VBox styleClass="stat-card" spacing="12">
+                        <Label text="&#127968;  COSTE COMPRA DEL INMUEBLE" styleClass="form-section-title"/>
+                        <GridPane hgap="14" vgap="10">
+                            <Label text="Precio de compra:"              styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="tfPrecioCompra" prefWidth="200" promptText="200000"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="€" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+                            <Label text="Impuesto ITP (calculado):"      styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <Label fx:id="lblItpImporte" text="0.00 €"   styleClass="value-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+
+                            <Label text="Gastos (notaría, registro...):"  styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <TextField fx:id="tfGastos" prefWidth="200" promptText="2000"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            <Label text="€" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+
+                            <Label text="Gastos hipoteca:"               styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <TextField fx:id="tfGastosHipoteca" prefWidth="200" promptText="1500"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label text="€" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+
+                            <Label text="Coste reforma:"                  styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <TextField fx:id="tfReforma" prefWidth="200" promptText="0"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            <Label text="€" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+
+                            <Label text="Comisión compra:"               styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                            <TextField fx:id="tfComision" prefWidth="200" promptText="0"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                            <Label text="€" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="5"/>
+
+                            <Label text="Mobiliario y otros:"            styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                            <TextField fx:id="tfMobiliario" prefWidth="200" promptText="0"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                            <Label text="€" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="6"/>
+
+                            <Separator GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="3"/>
+
+                            <Label text="TOTAL COMPRA:" styleClass="form-section-title"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                            <Label fx:id="lblTotalCompra" text="0.00 €"
+                                   style="-fx-text-fill: #6C63FF; -fx-font-size: 20px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="8" GridPane.columnSpan="2"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- GASTOS ANUALES -->
+                    <VBox styleClass="stat-card" spacing="12">
+                        <Label text="&#128201;  GASTOS ANUALES" styleClass="form-section-title"/>
+                        <GridPane hgap="14" vgap="10">
+                            <!-- cabecera columnas -->
+                            <Label text=""         GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <Label text="Mensual"  styleClass="form-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="Anual"    styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+                            <Label text="Impuestos (IBI, basuras...):"  styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="tfIbiMensual" prefWidth="110" promptText="0.00"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label fx:id="lblIbiAnual" text="0.00 €"   styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+
+                            <Label text="Seguros (hogar, vida, impago...):" styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <TextField fx:id="tfSegurosMensual" prefWidth="110" promptText="0.00"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            <Label fx:id="lblSegurosAnual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+
+                            <Label text="Comunidad propietarios:"       styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <TextField fx:id="tfComunidadMensual" prefWidth="110" promptText="0.00"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label fx:id="lblComunidadAnual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+
+                            <Label text="Mantenimiento:"                styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <TextField fx:id="tfMantenimientoMensual" prefWidth="110" promptText="0.00"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            <Label fx:id="lblMantenimientoAnual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+
+                            <Label text="Períodos vacío:"               styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                            <TextField fx:id="tfVacioMensual" prefWidth="110" promptText="0.00"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                            <Label fx:id="lblVacioAnual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="5"/>
+
+                            <Separator GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="3"/>
+
+                            <Label text="TOTAL GASTOS:" styleClass="form-section-title"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                            <Label fx:id="lblTotalGastosMensual" text="0.00 €"
+                                   style="-fx-text-fill: #e74c3c; -fx-font-size: 15px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                            <Label fx:id="lblTotalGastosAnual" text="0.00 €"
+                                   style="-fx-text-fill: #e74c3c; -fx-font-size: 15px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="7"/>
+                        </GridPane>
+                    </VBox>
+
+                </VBox>
+
+                <!-- ═══════════════ COLUMNA DERECHA ═══════════════ -->
+                <VBox spacing="16" HBox.hgrow="ALWAYS">
+
+                    <!-- INGRESOS -->
+                    <VBox styleClass="stat-card" spacing="12">
+                        <Label text="&#128200;  INGRESOS" styleClass="form-section-title"/>
+                        <GridPane hgap="14" vgap="10">
+                            <Label text=""        GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <Label text="Mensual" styleClass="form-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="Anual"   styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+                            <Label text="Cuota alquiler:" styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="tfAlquilerMensual" prefWidth="110" promptText="800"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label fx:id="lblAlquilerAnual" text="0.00 €"
+                                   style="-fx-text-fill: #2ecc71; -fx-font-size: 16px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- REVALORIZACIÓN -->
+                    <VBox styleClass="stat-card" spacing="12">
+                        <Label text="&#128202;  REVALORIZACIÓN ANUAL ESPERADA" styleClass="form-section-title"/>
+                        <GridPane hgap="14" vgap="10">
+                            <Label text="\% Revalorización estimada:" styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="tfRevalorizacion" prefWidth="80" promptText="3.0"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="\% anual" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+                            <Label text="Plusvalía estimada (5 años):" styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <Label fx:id="lblPlusvalia5" text="—" styleClass="value-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+
+                            <Label text="Plusvalía estimada (10 años):" styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <Label fx:id="lblPlusvalia10" text="—" styleClass="value-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- FINANCIACIÓN -->
+                    <VBox styleClass="stat-card" spacing="12">
+                        <Label text="&#127970;  FINANCIACIÓN" styleClass="form-section-title"/>
+                        <GridPane hgap="14" vgap="10">
+                            <Label text="\% Financiado (0 = sin hipoteca):" styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="tfPctFinanciado" prefWidth="80" promptText="80"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="\%" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+                            <Label text="Hipoteca:"                   styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <Label fx:id="lblHipoteca" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+
+                            <Label text="Capital que debes aportar:"  styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <Label fx:id="lblCapitalAportado" text="0.00 €"
+                                   style="-fx-text-fill: #f39c12; -fx-font-size: 14px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+
+                            <Label text="Plazo hipoteca (años):"      styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <TextField fx:id="tfPlazo" prefWidth="80" promptText="30"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label text="años" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+
+                            <Label text="Tipo de interés anual:"      styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <TextField fx:id="tfTipoInteres" prefWidth="80" promptText="3.5"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            <Label text="\%" styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+
+                            <Separator GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="3"/>
+
+                            <Label text="DETALLE FINANCIACIÓN" styleClass="form-section-title"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="3"/>
+
+                            <Label text=""        GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                            <Label text="Mensual" styleClass="form-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                            <Label text="Anual"   styleClass="form-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="7"/>
+
+                            <Label text="Cuota hipoteca:"             styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                            <Label fx:id="lblCuotaHipotecaMensual" text="0.00 €"
+                                   style="-fx-text-fill: #e74c3c; -fx-font-size: 13px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                            <Label fx:id="lblCuotaHipotecaAnual" text="0.00 €"
+                                   style="-fx-text-fill: #e74c3c; -fx-font-size: 13px; -fx-font-weight: bold;"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="8"/>
+
+                            <Label text="Intereses promedio:"         styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="9"/>
+                            <Label fx:id="lblInteresesMensual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+                            <Label fx:id="lblInteresesAnual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="9"/>
+
+                            <Label text="Amortización promedio:"      styleClass="form-label"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="10"/>
+                            <Label fx:id="lblAmortizacionMensual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+                            <Label fx:id="lblAmortizacionAnual" text="0.00 €" styleClass="value-label"
+                                   GridPane.columnIndex="2" GridPane.rowIndex="10"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- ANÁLISIS -->
+                    <VBox styleClass="stat-card" spacing="14">
+                        <Label text="&#128161;  ANÁLISIS DE LA OPERACIÓN — RENTABILIDAD"
+                               styleClass="form-section-title"/>
+
+                        <HBox spacing="12">
+                            <VBox styleClass="stat-card, card-green" spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="RENTABILIDAD BRUTA" styleClass="stat-card-title"/>
+                                <Label fx:id="lblRentabilidadBruta" text="0.00%"
+                                       style="-fx-text-fill: #2ecc71; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                                <Label text="Ingresos anuales / Inversión total" styleClass="stat-card-sub"/>
+                            </VBox>
+                            <VBox styleClass="stat-card, card-teal" spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="RENTABILIDAD NETA" styleClass="stat-card-title"/>
+                                <Label fx:id="lblRentabilidadNeta" text="0.00%"
+                                       style="-fx-text-fill: #1abc9c; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                                <Label text="(Ingresos - Gastos) / Inversión" styleClass="stat-card-sub"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="12">
+                            <VBox styleClass="stat-card, card-blue" spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="CASH FLOW MENSUAL" styleClass="stat-card-title"/>
+                                <Label fx:id="lblCashFlowMensual" text="0.00 €"
+                                       style="-fx-text-fill: #4A90E2; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                                <Label text="Alquiler − Hipoteca − Gastos" styleClass="stat-card-sub"/>
+                            </VBox>
+                            <VBox styleClass="stat-card, card-purple" spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="CASH FLOW ANUAL" styleClass="stat-card-title"/>
+                                <Label fx:id="lblCashFlowAnual" text="0.00 €"
+                                       style="-fx-text-fill: #6C63FF; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                                <Label text="Cash flow mensual × 12" styleClass="stat-card-sub"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox styleClass="stat-card, card-orange" spacing="5">
+                            <Label text="AÑOS PARA RECUPERAR LA INVERSIÓN" styleClass="stat-card-title"/>
+                            <Label fx:id="lblAniosRecuperar" text="—"
+                                   style="-fx-text-fill: #f39c12; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                            <Label text="Capital aportado / Cash flow anual positivo" styleClass="stat-card-sub"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Botones -->
+                    <HBox spacing="12" alignment="CENTER_RIGHT">
+                        <Button fx:id="btnLimpiar"
+                                text="&#128473;  Limpiar"
+                                styleClass="btn-warning"/>
+                        <Button fx:id="btnExportarPdf"
+                                text="&#128438;  Exportar PDF"
+                                styleClass="btn-primary"/>
+                    </HBox>
+
+                </VBox>
+
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>

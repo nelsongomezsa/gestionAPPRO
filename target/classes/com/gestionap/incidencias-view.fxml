@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gestionap.controller.IncidenciasController"
+      VBox.vgrow="ALWAYS"
+      styleClass="content-area"
+      stylesheets="@styles.css">
+
+    <VBox styleClass="page-header" spacing="4">
+        <Label text="Incidencias" styleClass="page-title"/>
+        <Label text="Control de incidencias y reparaciones" styleClass="page-subtitle"/>
+    </VBox>
+
+    <VBox styleClass="content-body" VBox.vgrow="ALWAYS" spacing="14">
+
+        <HBox styleClass="toolbar-row" spacing="10" alignment="CENTER_LEFT">
+
+            <ComboBox fx:id="cmbFiltroEstado"
+                      promptText="Filtrar por estado"
+                      prefWidth="190" styleClass="combo-box"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button fx:id="btnCambiarEstado"
+                    text="&#8646;  Avanzar Estado"
+                    styleClass="btn-warning"/>
+
+            <Button fx:id="btnEliminar"
+                    text="&#128465;  Eliminar"
+                    styleClass="btn-danger"/>
+
+            <Button fx:id="btnNuevaIncidencia"
+                    text="&#43;  Nueva Incidencia"
+                    styleClass="btn-primary"/>
+
+        </HBox>
+
+        <StackPane VBox.vgrow="ALWAYS">
+            <TableView fx:id="tablaIncidencias" styleClass="table-view"
+                       maxWidth="Infinity" maxHeight="Infinity">
+                <columns>
+                    <TableColumn fx:id="colId"          text="ID"           prefWidth="50"/>
+                    <TableColumn fx:id="colPrioridad"   text="PRIORIDAD"    prefWidth="105"/>
+                    <TableColumn fx:id="colHabitacion"  text="HAB."         prefWidth="60"/>
+                    <TableColumn fx:id="colInquilino"   text="INQUILINO"    prefWidth="160"/>
+                    <TableColumn fx:id="colDescripcion" text="DESCRIPCIÓN"  prefWidth="250"/>
+                    <TableColumn fx:id="colEstado"      text="ESTADO"       prefWidth="120"/>
+                    <TableColumn fx:id="colFecha"       text="FECHA"        prefWidth="105"/>
+                    <TableColumn fx:id="colDias"        text="DÍAS ABIERTA" prefWidth="110"/>
+                    <TableColumn fx:id="colCoste"       text="COSTE REP."   prefWidth="100"/>
+                </columns>
+                <placeholder>
+                    <Label text="No hay incidencias que mostrar" styleClass="info-label"/>
+                </placeholder>
+            </TableView>
+            <ProgressIndicator fx:id="progressIndicator" visible="false"
+                               prefWidth="60" prefHeight="60"/>
+        </StackPane>
+
+    </VBox>
+
+</VBox>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    DOCUMENTO INVÁLIDO — creado para demostrar que esquema.xsd funciona.
+
+    Errores introducidos deliberadamente:
+      1. estado = "ocupada"     → no está en la enumeración (disponible|alquilada|mantenimiento)
+      2. precioMensual = 50.00  → viola minInclusive 100
+      3. dni = "1234ABC"        → no cumple el patrón [0-9]{8}[A-Z]
+      4. email = "sinArroba"    → no cumple el patrón de email
+-->
+<contratos xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="esquema.xsd">
+
+    <contrato id="99">
+        <fechaInicio>2024-05-01</fechaInicio>
+        <fechaFin>2025-04-30</fechaFin>
+        <!-- ERROR 2: precio mínimo es 100, este valor es 50 -->
+        <precioMensual>50.00</precioMensual>
+        <inquilino id="99">
+            <nombre>Prueba</nombre>
+            <apellidos>Inválida</apellidos>
+            <!-- ERROR 3: DNI mal formado, debe ser 8 dígitos + letra mayúscula -->
+            <dni>1234ABC</dni>
+            <telefono>600000000</telefono>
+            <!-- ERROR 4: email sin símbolo @ -->
+            <email>sinArroba</email>
+        </inquilino>
+        <habitacion id="99">
+            <numero>5</numero>
+            <precio>120.00</precio>
+            <!-- ERROR 1: "ocupada" no es un valor válido -->
+            <estado>ocupada</estado>
+            <piso id="99">
+                <direccion>Calle Falsa 123</direccion>
+                <ciudad>Sevilla</ciudad>
+            </piso>
+        </habitacion>
+    </contrato>
+
+</contratos>
