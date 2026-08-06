@@ -18,8 +18,8 @@ public class EmailService {
     private static final String CONFIG_DIR  = System.getProperty("user.home") + "/.gestionap";
     private static final String CONFIG_FILE = CONFIG_DIR + "/email.properties";
 
-    /** Servicio bajo el que se guarda la contraseña SMTP en el Keychain. */
-    private static final String KEYCHAIN_SERVICIO = "gestionap-smtp";
+    /** Dominio bajo el que se guarda la contraseña SMTP en el almacén del sistema. */
+    private static final String KEYRING_DOMINIO = "gestionap-smtp";
 
     // ── Config ───────────────────────────────────────────────────
 
@@ -36,16 +36,16 @@ public class EmailService {
 
     /**
      * Versiones anteriores guardaban smtp.password en texto plano en este
-     * mismo fichero. Si lo encuentra, lo mueve al Keychain y reescribe el
-     * fichero sin la contraseña — migración perezosa, sin intervención del
-     * usuario.
+     * mismo fichero. Si lo encuentra, lo mueve al almacén de credenciales
+     * del sistema y reescribe el fichero sin la contraseña — migración
+     * perezosa, sin intervención del usuario.
      */
     private static void migrarPasswordLegacy(Properties p) {
         String legacy = p.getProperty("smtp.password");
         if (legacy == null || legacy.isBlank()) return;
         String user = p.getProperty("smtp.user");
         if (user != null && !user.isBlank()) {
-            KeychainUtil.guardar(KEYCHAIN_SERVICIO, user, legacy);
+            KeyringUtil.guardar(KEYRING_DOMINIO, user, legacy);
         }
         p.remove("smtp.password");
         guardarConfig(p);
@@ -57,7 +57,7 @@ public class EmailService {
             Path file = Paths.get(CONFIG_FILE);
             Files.createDirectories(dir);
             try (FileWriter w = new FileWriter(CONFIG_FILE)) {
-                p.store(w, "GestionAp - Email Config (la contraseña SMTP se guarda en el Keychain, no aquí)");
+                p.store(w, "GestionAp - Email Config (la contraseña SMTP se guarda en el almacén de credenciales del sistema, no aquí)");
             }
             restringirPermisos(dir, file);
         } catch (IOException ignored) {}
@@ -69,7 +69,10 @@ public class EmailService {
             Files.setPosixFilePermissions(dir, PosixFilePermissions.fromString("rwx------"));
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
         } catch (UnsupportedOperationException | IOException ignored) {
-            // Sistema de ficheros no-POSIX — no aplica en macOS.
+            // Sistema de ficheros no-POSIX (Windows): no hay equivalente
+            // directo a chmod. El fichero ya no contiene el password (va al
+            // Credential Manager), así que el residual expuesto es solo
+            // host/puerto/usuario, no un secreto.
         }
     }
 
@@ -104,7 +107,7 @@ public class EmailService {
             if (bt != btnOk) return null;
             if (tfUser.getText().isBlank() || tfPass.getText().isBlank()) return null;
             String user = tfUser.getText().trim();
-            KeychainUtil.guardar(KEYCHAIN_SERVICIO, user, tfPass.getText().trim());
+            KeyringUtil.guardar(KEYRING_DOMINIO, user, tfPass.getText().trim());
             Properties p = new Properties();
             p.setProperty("smtp.host", "smtp.gmail.com");
             p.setProperty("smtp.port", "587");
@@ -130,18 +133,19 @@ public class EmailService {
         String host = config.getProperty("smtp.host", "smtp.gmail.com");
         String port = config.getProperty("smtp.port", "587");
 
-        String pass = KeychainUtil.leer(KEYCHAIN_SERVICIO, user).orElse(null);
+        String pass = KeyringUtil.leer(KEYRING_DOMINIO, user).orElse(null);
         if (pass == null) {
-            // El Keychain no tiene el secreto (se borró, se denegó el acceso,
-            // o es otra máquina): re-pedimos credenciales en vez de fallar.
+            // El almacén de credenciales no tiene el secreto (se borró, se
+            // denegó el acceso, o es otra máquina): re-pedimos credenciales
+            // en vez de fallar.
             config = pedirConfiguracion();
             if (config == null) return false;
             guardarConfig(config);
             user = config.getProperty("smtp.user");
-            pass = KeychainUtil.leer(KEYCHAIN_SERVICIO, user).orElse(null);
+            pass = KeyringUtil.leer(KEYRING_DOMINIO, user).orElse(null);
             if (pass == null) {
-                mostrarError("No se pudo acceder al Keychain",
-                        "No se pudo guardar/leer la contraseña en el Keychain del sistema.");
+                mostrarError("No se pudo acceder al almacén de credenciales",
+                        "No se pudo guardar/leer la contraseña en el Keychain (macOS) / Credential Manager (Windows) del sistema.");
                 return false;
             }
         }
