@@ -1,3 +1,5 @@
+> **Nota:** esta es la version en evolucion del proyecto GestionAp original (ver [GestionAP](https://github.com/nelsongomezsa/GestionAP), entrega oficial del Proyecto Intermodular de 1 DAM). Aqui continuo aplicando mejoras y refactors fuera del plazo de entrega.
+>
 # GestionAp
 
 Proyecto Intermodular de 1º DAM · Prometeo by The Power
