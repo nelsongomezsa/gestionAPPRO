@@ -9,6 +9,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -16,6 +17,9 @@ public class EmailService {
 
     private static final String CONFIG_DIR  = System.getProperty("user.home") + "/.gestionap";
     private static final String CONFIG_FILE = CONFIG_DIR + "/email.properties";
+
+    /** Servicio bajo el que se guarda la contraseña SMTP en el Keychain. */
+    private static final String KEYCHAIN_SERVICIO = "gestionap-smtp";
 
     // ── Config ───────────────────────────────────────────────────
 
@@ -26,16 +30,47 @@ public class EmailService {
             try (FileReader r = new FileReader(f)) { p.load(r); }
             catch (IOException ignored) {}
         }
+        migrarPasswordLegacy(p);
         return p;
+    }
+
+    /**
+     * Versiones anteriores guardaban smtp.password en texto plano en este
+     * mismo fichero. Si lo encuentra, lo mueve al Keychain y reescribe el
+     * fichero sin la contraseña — migración perezosa, sin intervención del
+     * usuario.
+     */
+    private static void migrarPasswordLegacy(Properties p) {
+        String legacy = p.getProperty("smtp.password");
+        if (legacy == null || legacy.isBlank()) return;
+        String user = p.getProperty("smtp.user");
+        if (user != null && !user.isBlank()) {
+            KeychainUtil.guardar(KEYCHAIN_SERVICIO, user, legacy);
+        }
+        p.remove("smtp.password");
+        guardarConfig(p);
     }
 
     private static void guardarConfig(Properties p) {
         try {
-            Files.createDirectories(Paths.get(CONFIG_DIR));
+            Path dir  = Paths.get(CONFIG_DIR);
+            Path file = Paths.get(CONFIG_FILE);
+            Files.createDirectories(dir);
             try (FileWriter w = new FileWriter(CONFIG_FILE)) {
-                p.store(w, "GestionAp - Email Config");
+                p.store(w, "GestionAp - Email Config (la contraseña SMTP se guarda en el Keychain, no aquí)");
             }
+            restringirPermisos(dir, file);
         } catch (IOException ignored) {}
+    }
+
+    /** Restringe el directorio y el fichero de config al propio usuario (defensa en profundidad). */
+    private static void restringirPermisos(Path dir, Path file) {
+        try {
+            Files.setPosixFilePermissions(dir, PosixFilePermissions.fromString("rwx------"));
+            Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
+        } catch (UnsupportedOperationException | IOException ignored) {
+            // Sistema de ficheros no-POSIX — no aplica en macOS.
+        }
     }
 
     private static Properties pedirConfiguracion() {
@@ -68,11 +103,12 @@ public class EmailService {
         dlg.setResultConverter(bt -> {
             if (bt != btnOk) return null;
             if (tfUser.getText().isBlank() || tfPass.getText().isBlank()) return null;
+            String user = tfUser.getText().trim();
+            KeychainUtil.guardar(KEYCHAIN_SERVICIO, user, tfPass.getText().trim());
             Properties p = new Properties();
-            p.setProperty("smtp.host",     "smtp.gmail.com");
-            p.setProperty("smtp.port",     "587");
-            p.setProperty("smtp.user",     tfUser.getText().trim());
-            p.setProperty("smtp.password", tfPass.getText().trim());
+            p.setProperty("smtp.host", "smtp.gmail.com");
+            p.setProperty("smtp.port", "587");
+            p.setProperty("smtp.user", user);
             return p;
         });
 
@@ -91,9 +127,24 @@ public class EmailService {
         }
 
         String user = config.getProperty("smtp.user");
-        String pass = config.getProperty("smtp.password");
         String host = config.getProperty("smtp.host", "smtp.gmail.com");
         String port = config.getProperty("smtp.port", "587");
+
+        String pass = KeychainUtil.leer(KEYCHAIN_SERVICIO, user).orElse(null);
+        if (pass == null) {
+            // El Keychain no tiene el secreto (se borró, se denegó el acceso,
+            // o es otra máquina): re-pedimos credenciales en vez de fallar.
+            config = pedirConfiguracion();
+            if (config == null) return false;
+            guardarConfig(config);
+            user = config.getProperty("smtp.user");
+            pass = KeychainUtil.leer(KEYCHAIN_SERVICIO, user).orElse(null);
+            if (pass == null) {
+                mostrarError("No se pudo acceder al Keychain",
+                        "No se pudo guardar/leer la contraseña en el Keychain del sistema.");
+                return false;
+            }
+        }
 
         Properties smtp = new Properties();
         smtp.put("mail.smtp.auth",            "true");
@@ -101,16 +152,19 @@ public class EmailService {
         smtp.put("mail.smtp.host",            host);
         smtp.put("mail.smtp.port",            port);
 
+        final String remitente  = user;
+        final String credencial = pass;
+
         try {
             javax.mail.Session session = javax.mail.Session.getInstance(smtp, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(user, pass);
+                    return new PasswordAuthentication(remitente, credencial);
                 }
             });
 
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(user));
+            msg.setFrom(new InternetAddress(remitente));
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
             msg.setSubject(asunto);
             msg.setText(cuerpo);
