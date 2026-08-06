@@ -154,8 +154,11 @@ public class IncidenciaDAO {
                 for (Incidencia inc : lista)
                     inc.setCosteReparacion(costes.getOrDefault(inc.getIdIncidencia(), BigDecimal.ZERO));
             }
-        } catch (SQLException ignored) {
-            // coste_reparacion column may not exist in older schemas
+        } catch (SQLException e) {
+            // coste_reparacion puede no existir si no se corrió
+            // sql/alter_incidencias_coste.sql — se degrada a coste 0, pero
+            // se registra por si la causa es otra (conexión, permisos...).
+            System.err.println("[IncidenciaDAO] No se pudieron cargar costes de incidencias: " + e.getMessage());
         }
     }
 
@@ -168,7 +171,9 @@ public class IncidenciaDAO {
                     if (rs.next()) return rs.getBigDecimal(1);
                 }
             }
-        } catch (SQLException ignored) {}
+        } catch (SQLException e) {
+            System.err.println("[IncidenciaDAO] No se pudo cargar coste de incidencia " + idIncidencia + ": " + e.getMessage());
+        }
         return BigDecimal.ZERO;
     }
 }

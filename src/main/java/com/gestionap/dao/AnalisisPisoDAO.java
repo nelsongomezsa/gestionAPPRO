@@ -307,8 +307,11 @@ public class AnalisisPisoDAO {
                     if (rs.next()) return rs.getBigDecimal(1);
                 }
             }
-        } catch (SQLException ignored) {
-            // coste_reparacion column may not exist yet
+        } catch (SQLException e) {
+            // coste_reparacion puede no existir si no se corrió
+            // sql/alter_incidencias_coste.sql — se degrada a 0, pero se
+            // registra por si la causa es otra.
+            System.err.println("[AnalisisPisoDAO] No se pudo calcular coste de incidencias del piso " + idPiso + ": " + e.getMessage());
         }
         return BigDecimal.ZERO;
     }
@@ -333,7 +336,9 @@ public class AnalisisPisoDAO {
                         lista.add(rs.getString("nombre") + " → " + rs.getDate("fecha_fin"));
                 }
             }
-        } catch (SQLException ignored) {}
+        } catch (SQLException e) {
+            System.err.println("[AnalisisPisoDAO] No se pudieron cargar próximos vencimientos del piso " + idPiso + ": " + e.getMessage());
+        }
         return lista;
     }
 
@@ -351,8 +356,8 @@ public class AnalisisPisoDAO {
                 for (IncidenciaDetalle d : lista)
                     d.costeReparacion = costes.getOrDefault(d.idIncidencia, BigDecimal.ZERO);
             }
-        } catch (SQLException ignored) {
-            // Column doesn't exist yet – keep ZERO
+        } catch (SQLException e) {
+            System.err.println("[AnalisisPisoDAO] No se pudieron cargar costes de incidencias del piso " + idPiso + ": " + e.getMessage());
         }
     }
 }

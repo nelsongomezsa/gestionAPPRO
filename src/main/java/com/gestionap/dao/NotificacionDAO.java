@@ -16,13 +16,29 @@ public class NotificacionDAO {
 
     // ── Generación automática ────────────────────────────────────
 
+    /**
+     * Corre los 4 generadores de forma independiente: si uno falla (p. ej.
+     * error SQL puntual), no bloquea a los otros tres, y el fallo queda
+     * registrado en vez de desaparecer en silencio.
+     */
     public void generarNotificaciones(int idUsuario) {
+        ejecutarGenerador("contratos por vencer",   () -> generarContratosVencen(idUsuario));
+        ejecutarGenerador("pagos pendientes",       () -> generarPagosPendientes(idUsuario));
+        ejecutarGenerador("incidencias antiguas",   () -> generarIncidenciasAntiguas(idUsuario));
+        ejecutarGenerador("mantenimiento largo",    () -> generarMantenimientoLargo(idUsuario));
+    }
+
+    @FunctionalInterface
+    private interface GeneradorNotificacion {
+        void ejecutar() throws SQLException;
+    }
+
+    private void ejecutarGenerador(String descripcion, GeneradorNotificacion generador) {
         try {
-            generarContratosVencen(idUsuario);
-            generarPagosPendientes(idUsuario);
-            generarIncidenciasAntiguas(idUsuario);
-            generarMantenimientoLargo(idUsuario);
-        } catch (Exception ignored) {}
+            generador.ejecutar();
+        } catch (SQLException e) {
+            System.err.println("[NotificacionDAO] No se pudo generar notificaciones de " + descripcion + ": " + e.getMessage());
+        }
     }
 
     private void generarContratosVencen(int idUsuario) throws SQLException {
