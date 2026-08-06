@@ -31,12 +31,26 @@ public class DatabaseConnection {
         this.conexion.setAutoCommit(true);
     }
 
+    /** Solo para tests: envuelve una conexión ya abierta (p. ej. H2 en memoria). */
+    private DatabaseConnection(Connection conexionDeTest) {
+        this.conexion = conexionDeTest;
+    }
 
     public static synchronized DatabaseConnection getInstance() throws SQLException {
         if (instancia == null || instancia.getConexion().isClosed()) {
             instancia = new DatabaseConnection();
         }
         return instancia;
+    }
+
+    /**
+     * Solo para tests: sustituye el singleton por una conexión ya abierta
+     * (H2 en memoria), sin leer database.properties ni tocar MySQL. Los DAO
+     * siguen llamando a getInstance() sin cambios — no saben ni les importa
+     * si están hablando con MySQL o con H2.
+     */
+    public static synchronized void usarConexionDeTest(Connection conexionDeTest) {
+        instancia = new DatabaseConnection(conexionDeTest);
     }
 
     public Connection getConexion() {
