@@ -3,6 +3,7 @@ package com.gestionap.dao;
 import com.gestionap.database.DatabaseConnection;
 import com.gestionap.model.Usuario;
 import com.gestionap.model.Usuario.Rol;
+import com.gestionap.utils.Session;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,6 +13,20 @@ public class UsuarioDAO {
 
     private Connection getConexion() throws SQLException {
         return DatabaseConnection.getInstance().getConexion();
+    }
+
+    /**
+     * Gestión de usuarios (alta, listado, cambio de rol, activar/desactivar)
+     * es una operación de administrador. La UI ya oculta estas acciones a
+     * usuarios sin rol admin, pero eso es solo cosmético: cualquier código
+     * (o error de UI futuro) podía invocar estos métodos sin control real.
+     * Esta comprobación es la que realmente decide.
+     */
+    private void requireAdmin() {
+        Usuario actual = Session.getInstance().getUsuarioActual();
+        if (actual == null || actual.getRol() != Rol.admin) {
+            throw new SecurityException("Se requiere rol de administrador para esta operación.");
+        }
     }
 
     public Usuario autenticar(String email, String passwordHash) throws SQLException {
@@ -49,6 +64,7 @@ public class UsuarioDAO {
     }
 
     public List<Usuario> listarTodos() throws SQLException {
+        requireAdmin();
         String sql = "SELECT id_usuario, nombre, email, rol, activo FROM Usuarios ORDER BY nombre";
         List<Usuario> lista = new ArrayList<>();
         try (PreparedStatement ps = getConexion().prepareStatement(sql);
@@ -59,6 +75,7 @@ public class UsuarioDAO {
     }
 
     public int insertar(Usuario u, String passwordHash) throws SQLException {
+        requireAdmin();
         String sql = "INSERT INTO Usuarios (nombre, email, password_hash, rol, activo) VALUES (?, ?, ?, ?, 1)";
         try (PreparedStatement ps = getConexion().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, u.getNombre());
@@ -74,6 +91,7 @@ public class UsuarioDAO {
     }
 
     public boolean activarDesactivar(int idUsuario, boolean activo) throws SQLException {
+        requireAdmin();
         String sql = "UPDATE Usuarios SET activo = ? WHERE id_usuario = ?";
         try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
             ps.setInt(1, activo ? 1 : 0);
@@ -83,6 +101,7 @@ public class UsuarioDAO {
     }
 
     public boolean actualizarRol(int idUsuario, Rol rol) throws SQLException {
+        requireAdmin();
         String sql = "UPDATE Usuarios SET rol = ? WHERE id_usuario = ?";
         try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
             ps.setString(1, rol.name());
