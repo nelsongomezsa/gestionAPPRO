@@ -120,6 +120,33 @@ public class ContratoDAO {
         }
     }
 
+    /**
+     * Crea el contrato y marca la habitación como alquilada en una única
+     * transacción. Si la habitación ya no está disponible (p. ej. otro
+     * usuario la alquiló mientras este diálogo estaba abierto), no se crea
+     * el contrato y se lanza SQLException.
+     */
+    public int crearConHabitacion(Contrato c) throws SQLException {
+        return DatabaseConnection.getInstance().ejecutarEnTransaccion(() -> {
+            if (!new HabitacionDAO().reservar(c.getIdHabitacion())) {
+                throw new SQLException(
+                        "La habitación ya no está disponible (puede que otro usuario la haya alquilado).");
+            }
+            return insertar(c);
+        });
+    }
+
+    /**
+     * Finaliza el contrato y libera la habitación en una única transacción.
+     */
+    public void finalizarYLiberarHabitacion(int idContrato, int idHabitacion) throws SQLException {
+        DatabaseConnection.getInstance().ejecutarEnTransaccion(() -> {
+            finalizarContrato(idContrato);
+            new HabitacionDAO().liberar(idHabitacion);
+            return null;
+        });
+    }
+
     public boolean eliminar(int idContrato) throws SQLException {
         String sql = "DELETE FROM Contratos WHERE id_contrato = ?";
         try (PreparedStatement ps = getConexion().prepareStatement(sql)) {

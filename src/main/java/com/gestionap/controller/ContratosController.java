@@ -187,8 +187,7 @@ public class ContratosController implements Initializable {
         confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         confirm.showAndWait().filter(b -> b == ButtonType.YES).ifPresent(b -> {
             try {
-                contratoDAO.finalizarContrato(sel.getIdContrato());
-                habitacionDAO.actualizarEstado(sel.getIdHabitacion(), Habitacion.Estado.disponible);
+                contratoDAO.finalizarYLiberarHabitacion(sel.getIdContrato(), sel.getIdHabitacion());
                 uid(uid -> actividadDAO.registrar(uid, "FINALIZAR_CONTRATO",
                         "Contrato #" + sel.getIdContrato() + " de " + sel.getNombreInquilino() + " finalizado"));
                 cargarDatos();
@@ -308,8 +307,7 @@ public class ContratosController implements Initializable {
 
         dialog.showAndWait().ifPresent(c -> {
             try {
-                contratoDAO.insertar(c);
-                habitacionDAO.actualizarEstado(c.getIdHabitacion(), Habitacion.Estado.alquilada);
+                contratoDAO.crearConHabitacion(c);
                 uid(uid -> actividadDAO.registrar(uid, "CREAR_CONTRATO",
                         "Contrato creado para hab. " + c.getIdHabitacion()));
                 cargarDatos();
