@@ -43,6 +43,37 @@ public class DatabaseConnection {
         return conexion;
     }
 
+    /**
+     * Operación de escritura sobre múltiples tablas que debe aplicarse de forma
+     * atómica. Los DAO invocados dentro de {@code operacion} deben usar
+     * {@code DatabaseConnection.getInstance().getConexion()} (el mismo singleton),
+     * de modo que todas sus sentencias participen de la misma transacción.
+     */
+    @FunctionalInterface
+    public interface Operacion<T> {
+        T ejecutar() throws SQLException;
+    }
+
+    /**
+     * Ejecuta {@code operacion} en una transacción: autocommit desactivado,
+     * commit si todo va bien, rollback si algo lanza SQLException.
+     * Sincronizado porque la conexión es única para toda la aplicación.
+     */
+    public synchronized <T> T ejecutarEnTransaccion(Operacion<T> operacion) throws SQLException {
+        Connection con = getConexion();
+        con.setAutoCommit(false);
+        try {
+            T resultado = operacion.ejecutar();
+            con.commit();
+            return resultado;
+        } catch (SQLException e) {
+            con.rollback();
+            throw e;
+        } finally {
+            con.setAutoCommit(true);
+        }
+    }
+
     public void cerrarConexion() {
         if (conexion != null) {
             try {

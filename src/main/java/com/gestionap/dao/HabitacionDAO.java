@@ -118,6 +118,34 @@ public class HabitacionDAO {
         }
     }
 
+    /**
+     * Transición atómica disponible -> alquilada. Devuelve false si la
+     * habitación ya no estaba disponible (evita doble alquiler concurrente).
+     */
+    public boolean reservar(int idHabitacion) throws SQLException {
+        String sql = "UPDATE Habitaciones SET estado = ? WHERE id_habitacion = ? AND estado = ?";
+        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            ps.setString(1, Estado.alquilada.name());
+            ps.setInt(2, idHabitacion);
+            ps.setString(3, Estado.disponible.name());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Transición atómica alquilada -> disponible. Devuelve false si la
+     * habitación ya no estaba alquilada.
+     */
+    public boolean liberar(int idHabitacion) throws SQLException {
+        String sql = "UPDATE Habitaciones SET estado = ? WHERE id_habitacion = ? AND estado = ?";
+        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            ps.setString(1, Estado.disponible.name());
+            ps.setInt(2, idHabitacion);
+            ps.setString(3, Estado.alquilada.name());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     public boolean eliminar(int idHabitacion) throws SQLException {
         String sql = "DELETE FROM Habitaciones WHERE id_habitacion = ?";
         try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
