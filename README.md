@@ -61,13 +61,16 @@ mysql -u root -p < sql/datos.sql
 
 **3. Configura la conexión**
 
-Crea el fichero `src/main/resources/database.properties` con tus datos:
+Copia la plantilla y rellena tus credenciales:
+```bash
+cp src/main/resources/database.properties.example src/main/resources/database.properties
+```
 ```properties
-db.url=jdbc:mysql://localhost:3306/gestion_alquileres
+db.url=jdbc:mysql://localhost:3306/gestion_alquileres_pro?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 db.user=root
 db.password=tu_contraseña
 ```
-> Este fichero está en el `.gitignore` — nunca se sube al repositorio.
+> `database.properties` está en el `.gitignore` — nunca se sube al repositorio. Solo se versiona `database.properties.example`, sin credenciales reales.
 
 **4. Compila y arranca**
 ```bash

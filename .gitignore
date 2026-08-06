@@ -5,3 +5,6 @@ target/
 *.iml
 .DS_Store
 **/.DS_Store
+
+# Credenciales locales — usa database.properties.example como plantilla
+src/main/resources/database.properties
