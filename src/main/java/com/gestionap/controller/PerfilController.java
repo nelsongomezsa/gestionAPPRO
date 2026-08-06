@@ -180,11 +180,11 @@ public class PerfilController implements Initializable {
         }
         try {
             Usuario u = Session.getInstance().getUsuarioActual();
-            if (usuarioDAO.autenticar(u.getEmail(), PasswordUtil.sha256(actual)) == null) {
+            if (usuarioDAO.autenticar(u.getEmail(), actual) == null) {
                 mostrarMensajePassword("La contraseña actual no es correcta.", false);
                 return;
             }
-            usuarioDAO.actualizarPassword(u.getIdUsuario(), PasswordUtil.sha256(nueva));
+            usuarioDAO.actualizarPassword(u.getIdUsuario(), PasswordUtil.hash(nueva));
             actividadDAO.registrar(u.getIdUsuario(), "CAMBIAR_PASSWORD", "Contraseña cambiada");
             pfActual.clear(); pfNueva.clear(); pfConfirmar.clear();
             mostrarMensajePassword("¡Contraseña actualizada correctamente!", true);

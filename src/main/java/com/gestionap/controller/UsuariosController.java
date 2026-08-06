@@ -132,7 +132,7 @@ public class UsuariosController implements Initializable {
             Usuario u = new Usuario();
             u.setNombre(tfNombre.getText().trim());
             u.setEmail(tfEmail.getText().trim());
-            u.setPasswordHash(PasswordUtil.sha256(pfPass.getText()));
+            u.setPasswordHash(PasswordUtil.hash(pfPass.getText()));
             u.setRol(Usuario.Rol.valueOf(cmbRol.getValue()));
             return u;
         });

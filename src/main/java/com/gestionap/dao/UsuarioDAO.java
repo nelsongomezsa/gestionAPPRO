@@ -3,6 +3,7 @@ package com.gestionap.dao;
 import com.gestionap.database.DatabaseConnection;
 import com.gestionap.model.Usuario;
 import com.gestionap.model.Usuario.Rol;
+import com.gestionap.utils.PasswordUtil;
 import com.gestionap.utils.Session;
 
 import java.sql.*;
@@ -29,17 +30,29 @@ public class UsuarioDAO {
         }
     }
 
-    public Usuario autenticar(String email, String passwordHash) throws SQLException {
-        String sql = "SELECT id_usuario, nombre, email, rol, activo " +
-                     "FROM Usuarios WHERE email = ? AND password_hash = ? AND activo = 1";
+    /**
+     * Autentica por email + contraseña en texto plano. Soporta la migración
+     * de hashes SHA-256 (legacy) a bcrypt: si el hash almacenado todavía es
+     * SHA-256 y la contraseña coincide, se re-hashea a bcrypt en este mismo
+     * login antes de devolver el usuario. Si ya es bcrypt, se verifica
+     * directo y no se toca la fila.
+     */
+    public Usuario autenticar(String email, String plainPassword) throws SQLException {
+        String sql = "SELECT id_usuario, nombre, email, rol, activo, password_hash " +
+                     "FROM Usuarios WHERE email = ? AND activo = 1";
         try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
             ps.setString(1, email.trim().toLowerCase());
-            ps.setString(2, passwordHash);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapearFila(rs);
+                if (!rs.next()) return null;
+                String storedHash = rs.getString("password_hash");
+                if (!PasswordUtil.verificar(plainPassword, storedHash)) return null;
+                Usuario u = mapearFila(rs);
+                if (!PasswordUtil.esBcrypt(storedHash)) {
+                    actualizarPassword(u.getIdUsuario(), PasswordUtil.hash(plainPassword));
+                }
+                return u;
             }
         }
-        return null;
     }
 
     public Usuario buscarPorEmail(String email) throws SQLException {
