@@ -2,7 +2,6 @@ package com.gestionap.controller;
 
 import com.gestionap.dao.UsuarioDAO;
 import com.gestionap.model.Usuario;
-import com.gestionap.utils.PasswordUtil;
 import com.gestionap.utils.Session;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -51,8 +50,7 @@ public class LoginController implements Initializable {
         }
 
         try {
-            String hash    = PasswordUtil.sha256(password);
-            Usuario usuario = usuarioDAO.autenticar(email, hash);
+            Usuario usuario = usuarioDAO.autenticar(email, password);
 
             if (usuario == null) {
                 mostrarError("Credenciales incorrectas. Verifica tu email y contraseña.");

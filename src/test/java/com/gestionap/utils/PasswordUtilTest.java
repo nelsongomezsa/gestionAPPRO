@@ -54,4 +54,51 @@ class PasswordUtilTest {
         assertTrue(PasswordUtil.verificar("", hash));
         assertFalse(PasswordUtil.verificar("algo", hash));
     }
+
+    // --- bcrypt (formato actual) ---
+
+    @Test
+    void hash_generaFormatoBcrypt() {
+        String hash = PasswordUtil.hash("miPassword");
+        assertTrue(PasswordUtil.esBcrypt(hash));
+    }
+
+    @Test
+    void hash_esNoDeterminista_porElSaltAleatorio() {
+        assertNotEquals(PasswordUtil.hash("miPassword"), PasswordUtil.hash("miPassword"));
+    }
+
+    @Test
+    void verificar_bcrypt_contrasenaCorrecta_devuelveTrue() {
+        String hash = PasswordUtil.hash("miPassword");
+        assertTrue(PasswordUtil.verificar("miPassword", hash));
+    }
+
+    @Test
+    void verificar_bcrypt_contrasenaIncorrecta_devuelveFalse() {
+        String hash = PasswordUtil.hash("miPassword");
+        assertFalse(PasswordUtil.verificar("otraPassword", hash));
+    }
+
+    // --- detección de formato / migración ---
+
+    @Test
+    void esBcrypt_hashSha256_devuelveFalse() {
+        assertFalse(PasswordUtil.esBcrypt(PasswordUtil.sha256("admin123")));
+    }
+
+    @Test
+    void esBcrypt_hashBcrypt_devuelveTrue() {
+        assertTrue(PasswordUtil.esBcrypt(PasswordUtil.hash("admin123")));
+    }
+
+    @Test
+    void esBcrypt_null_devuelveFalse() {
+        assertFalse(PasswordUtil.esBcrypt(null));
+    }
+
+    @Test
+    void verificar_null_devuelveFalse() {
+        assertFalse(PasswordUtil.verificar("cualquiera", null));
+    }
 }
