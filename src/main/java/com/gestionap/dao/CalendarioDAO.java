@@ -35,7 +35,8 @@ public class CalendarioDAO {
                 ORDER BY c.id_contrato
                 """;
         List<Contrato> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(fin));
             ps.setDate(2, Date.valueOf(inicio));
             try (ResultSet rs = ps.executeQuery()) {
@@ -58,7 +59,8 @@ public class CalendarioDAO {
                 ORDER BY p.fecha_pago
                 """;
         List<Pago> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(inicio));
             ps.setDate(2, Date.valueOf(fin));
             try (ResultSet rs = ps.executeQuery()) {

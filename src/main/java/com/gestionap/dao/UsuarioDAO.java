@@ -40,7 +40,8 @@ public class UsuarioDAO {
     public Usuario autenticar(String email, String plainPassword) throws SQLException {
         String sql = "SELECT id_usuario, nombre, email, rol, activo, password_hash " +
                      "FROM Usuarios WHERE email = ? AND activo = 1";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email.trim().toLowerCase());
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return null;
@@ -58,7 +59,8 @@ public class UsuarioDAO {
     public Usuario buscarPorEmail(String email) throws SQLException {
         String sql = "SELECT id_usuario, nombre, email, rol, activo " +
                      "FROM Usuarios WHERE email = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email.trim().toLowerCase());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearFila(rs);
@@ -69,7 +71,8 @@ public class UsuarioDAO {
 
     public boolean actualizarPassword(int idUsuario, String newPasswordHash) throws SQLException {
         String sql = "UPDATE Usuarios SET password_hash = ? WHERE id_usuario = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, newPasswordHash);
             ps.setInt(2, idUsuario);
             return ps.executeUpdate() > 0;
@@ -80,7 +83,8 @@ public class UsuarioDAO {
         requireAdmin();
         String sql = "SELECT id_usuario, nombre, email, rol, activo FROM Usuarios ORDER BY nombre";
         List<Usuario> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapearFila(rs));
         }
@@ -90,7 +94,8 @@ public class UsuarioDAO {
     public int insertar(Usuario u, String passwordHash) throws SQLException {
         requireAdmin();
         String sql = "INSERT INTO Usuarios (nombre, email, password_hash, rol, activo) VALUES (?, ?, ?, ?, 1)";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, u.getNombre());
             ps.setString(2, u.getEmail().trim().toLowerCase());
             ps.setString(3, passwordHash);
@@ -106,7 +111,8 @@ public class UsuarioDAO {
     public boolean activarDesactivar(int idUsuario, boolean activo) throws SQLException {
         requireAdmin();
         String sql = "UPDATE Usuarios SET activo = ? WHERE id_usuario = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, activo ? 1 : 0);
             ps.setInt(2, idUsuario);
             return ps.executeUpdate() > 0;
@@ -116,7 +122,8 @@ public class UsuarioDAO {
     public boolean actualizarRol(int idUsuario, Rol rol) throws SQLException {
         requireAdmin();
         String sql = "UPDATE Usuarios SET rol = ? WHERE id_usuario = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, rol.name());
             ps.setInt(2, idUsuario);
             return ps.executeUpdate() > 0;
@@ -125,7 +132,8 @@ public class UsuarioDAO {
 
     public boolean actualizarPerfil(int idUsuario, String nombre, String email) throws SQLException {
         String sql = "UPDATE Usuarios SET nombre = ?, email = ? WHERE id_usuario = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, nombre.trim());
             ps.setString(2, email.trim().toLowerCase());
             ps.setInt(3, idUsuario);

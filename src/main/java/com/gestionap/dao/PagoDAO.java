@@ -28,7 +28,8 @@ public class PagoDAO {
                 ORDER BY p.fecha_pago DESC
                 """;
         List<Pago> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idContrato);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -50,7 +51,8 @@ public class PagoDAO {
                 ORDER BY p.fecha_pago DESC
                 """;
         List<Pago> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearFila(rs));
@@ -62,7 +64,8 @@ public class PagoDAO {
 
     public int insertar(Pago p) throws SQLException {
         String sql = "INSERT INTO Pagos (id_contrato, cantidad, metodo_pago, fecha_pago) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, p.getIdContrato());
             ps.setBigDecimal(2, p.getCantidad());
             ps.setString(3, p.getMetodoPago().name());
@@ -78,7 +81,8 @@ public class PagoDAO {
 
     public boolean eliminar(int idPago) throws SQLException {
         String sql = "DELETE FROM Pagos WHERE id_pago = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPago);
             return ps.executeUpdate() > 0;
         }

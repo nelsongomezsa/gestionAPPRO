@@ -14,10 +14,6 @@ public class ContratoDAO {
         return DatabaseConnection.getInstance().getConexion();
     }
 
-
-
-
-
     public List<Contrato> listarTodos() throws SQLException {
 
         String sql = """
@@ -34,7 +30,8 @@ public class ContratoDAO {
                 ORDER BY c.fecha_inicio DESC
                 """;
         List<Contrato> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearFila(rs));
@@ -60,7 +57,8 @@ public class ContratoDAO {
                 ORDER BY c.fecha_fin ASC
                 """;
         List<Contrato> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearFila(rs));
@@ -84,7 +82,8 @@ public class ContratoDAO {
                 JOIN Pisos        p ON h.id_piso        = p.id_piso
                 WHERE c.id_contrato = ?
                 """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idContrato);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearFila(rs);
@@ -97,7 +96,8 @@ public class ContratoDAO {
     public int insertar(Contrato c) throws SQLException {
         String sql = "INSERT INTO Contratos (id_habitacion, id_inquilino, fecha_inicio, fecha_fin, precio_mensual) " +
                      "VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, c.getIdHabitacion());
             ps.setInt(2, c.getIdInquilino());
             ps.setDate(3, Date.valueOf(c.getFechaInicio()));
@@ -114,7 +114,8 @@ public class ContratoDAO {
 
     public boolean finalizarContrato(int idContrato) throws SQLException {
         String sql = "UPDATE Contratos SET fecha_fin = CURDATE() WHERE id_contrato = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idContrato);
             return ps.executeUpdate() > 0;
         }
@@ -149,7 +150,8 @@ public class ContratoDAO {
 
     public boolean eliminar(int idContrato) throws SQLException {
         String sql = "DELETE FROM Contratos WHERE id_contrato = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idContrato);
             return ps.executeUpdate() > 0;
         }

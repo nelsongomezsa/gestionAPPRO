@@ -22,7 +22,8 @@ public class PisoDAO {
                 ORDER BY c.nombre, p.direccion
                 """;
         List<Piso> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Piso p = new Piso();

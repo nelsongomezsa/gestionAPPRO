@@ -74,7 +74,8 @@ public class AnalisisPisoDAO {
             """;
 
         List<AnalisisPiso> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 AnalisisPiso a = new AnalisisPiso();
@@ -117,7 +118,8 @@ public class AnalisisPisoDAO {
             LEFT JOIN Habitaciones h ON h.id_piso = p.id_piso
             """;
         Map<String, Object> r = new LinkedHashMap<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 r.put("totalPisos",    rs.getInt("total_pisos"));
@@ -149,7 +151,8 @@ public class AnalisisPisoDAO {
             ORDER BY h.numero
             """;
         List<HabitacionDetalle> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPiso);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -180,7 +183,8 @@ public class AnalisisPisoDAO {
             ORDER BY c.fecha_inicio DESC
             """;
         List<ContratoDetalle> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPiso);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -215,7 +219,8 @@ public class AnalisisPisoDAO {
             LIMIT 100
             """;
         List<PagoDetalle> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPiso);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -244,7 +249,8 @@ public class AnalisisPisoDAO {
             ORDER BY inc.fecha DESC
             """;
         List<IncidenciaDetalle> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPiso);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -281,7 +287,8 @@ public class AnalisisPisoDAO {
             ORDER BY anio, num_mes
             """;
         Map<String, BigDecimal> resultado = new LinkedHashMap<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPiso);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
@@ -301,7 +308,8 @@ public class AnalisisPisoDAO {
                 JOIN Habitaciones h ON inc.id_habitacion = h.id_habitacion
                 WHERE h.id_piso = ?
                 """;
-            try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, idPiso);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) return rs.getBigDecimal(1);
@@ -329,7 +337,8 @@ public class AnalisisPisoDAO {
                   AND c.fecha_inicio <= CURDATE()
                 ORDER BY c.fecha_fin ASC
                 """;
-            try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, idPiso);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next())
@@ -349,7 +358,8 @@ public class AnalisisPisoDAO {
                          "FROM Incidencias WHERE id_incidencia IN (" +
                          lista.stream().map(d -> String.valueOf(d.idIncidencia))
                               .collect(java.util.stream.Collectors.joining(",")) + ")";
-            try (PreparedStatement ps = getConexion().prepareStatement(sql);
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql);
                  ResultSet rs = ps.executeQuery()) {
                 Map<Integer, BigDecimal> costes = new HashMap<>();
                 while (rs.next()) costes.put(rs.getInt(1), rs.getBigDecimal(2));

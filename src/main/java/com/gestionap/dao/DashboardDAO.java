@@ -47,7 +47,8 @@ public class DashboardDAO {
 
     public int contarHabitacionesPorEstado(String estado) throws SQLException {
         String sql = "SELECT COUNT(*) FROM Habitaciones WHERE estado = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, estado);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
@@ -78,7 +79,8 @@ public class DashboardDAO {
     public BigDecimal totalIngresosMensuales() throws SQLException {
         String sql = "SELECT COALESCE(SUM(precio_mensual), 0) FROM Contratos " +
                      "WHERE fecha_inicio <= CURDATE() AND fecha_fin >= CURDATE()";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) return rs.getBigDecimal(1);
         }
@@ -95,7 +97,8 @@ public class DashboardDAO {
             "GROUP BY anio, num_mes, mes " +
             "ORDER BY anio, num_mes";
         Map<String, BigDecimal> resultado = new LinkedHashMap<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 resultado.put(rs.getString("mes"), rs.getBigDecimal("total"));
@@ -113,7 +116,8 @@ public class DashboardDAO {
             "WHERE fecha_pago >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) " +
             "GROUP BY anio, num_mes, mes ORDER BY anio, num_mes";
         Map<String, BigDecimal> resultado = new LinkedHashMap<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) resultado.put(rs.getString("mes"), rs.getBigDecimal("total"));
         }
@@ -122,7 +126,8 @@ public class DashboardDAO {
 
     public BigDecimal ingresosTotalAnio(int anio) throws SQLException {
         String sql = "SELECT COALESCE(SUM(cantidad), 0) FROM Pagos WHERE YEAR(fecha_pago) = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, anio);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getBigDecimal(1);
@@ -139,7 +144,8 @@ public class DashboardDAO {
             "WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) " +
             "GROUP BY anio, num_mes, mes ORDER BY anio, num_mes";
         Map<String, Integer> resultado = new LinkedHashMap<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) resultado.put(rs.getString("mes"), rs.getInt("total"));
         }
@@ -149,7 +155,8 @@ public class DashboardDAO {
     public Map<String, Integer> habitacionesPorEstado() throws SQLException {
         String sql = "SELECT estado, COUNT(*) AS cnt FROM Habitaciones GROUP BY estado";
         Map<String, Integer> resultado = new LinkedHashMap<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) resultado.put(rs.getString("estado"), rs.getInt("cnt"));
         }
@@ -163,7 +170,8 @@ public class DashboardDAO {
     }
 
     private int contarFilas(String sql) throws SQLException {
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) return rs.getInt(1);
         }

@@ -70,6 +70,13 @@
             <version>${mysql.version}</version>
         </dependency>
 
+        <!-- HikariCP — pool de conexiones -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>6.3.0</version>
+        </dependency>
+
         <!-- jBCrypt — hash de contraseñas -->
         <dependency>
             <groupId>org.mindrot</groupId>

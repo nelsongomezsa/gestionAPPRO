@@ -16,7 +16,8 @@ public class ActividadDAO {
     public void registrar(int idUsuario, String accion, String descripcion) {
         try {
             String sql = "INSERT INTO Actividad (id_usuario, accion, descripcion) VALUES (?, ?, ?)";
-            try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, idUsuario);
                 ps.setString(2, accion);
                 ps.setString(3, descripcion);
@@ -32,7 +33,8 @@ public class ActividadDAO {
         String sql = "SELECT id, id_usuario, accion, descripcion, fecha " +
                      "FROM Actividad WHERE id_usuario = ? ORDER BY fecha DESC LIMIT ?";
         List<ActividadLog> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             ps.setInt(2, limite);
             try (ResultSet rs = ps.executeQuery()) {
@@ -46,7 +48,8 @@ public class ActividadDAO {
         String sql = "SELECT a.id, a.id_usuario, a.accion, a.descripcion, a.fecha " +
                      "FROM Actividad a ORDER BY a.fecha DESC LIMIT ?";
         List<ActividadLog> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, limite);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) lista.add(mapear(rs));
@@ -61,7 +64,8 @@ public class ActividadDAO {
             String sql = todAs
                 ? "SELECT COUNT(*) FROM Actividad WHERE id_usuario = ?"
                 : "SELECT COUNT(*) FROM Actividad WHERE id_usuario = ? AND accion = ?";
-            try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, idUsuario);
                 if (!todAs) ps.setString(2, accion);
                 try (ResultSet rs = ps.executeQuery()) {

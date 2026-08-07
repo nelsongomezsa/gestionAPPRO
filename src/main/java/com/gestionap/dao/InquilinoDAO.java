@@ -18,7 +18,8 @@ public class InquilinoDAO {
         String sql = "SELECT id_inquilino, nombre, apellidos, dni, telefono, email " +
                      "FROM Inquilinos ORDER BY apellidos, nombre";
         List<Inquilino> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearFila(rs));
@@ -31,7 +32,8 @@ public class InquilinoDAO {
     public Inquilino buscarPorDni(String dni) throws SQLException {
         String sql = "SELECT id_inquilino, nombre, apellidos, dni, telefono, email " +
                      "FROM Inquilinos WHERE dni = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, dni);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearFila(rs);
@@ -44,7 +46,8 @@ public class InquilinoDAO {
     public Inquilino buscarPorId(int idInquilino) throws SQLException {
         String sql = "SELECT id_inquilino, nombre, apellidos, dni, telefono, email " +
                      "FROM Inquilinos WHERE id_inquilino = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idInquilino);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearFila(rs);
@@ -56,7 +59,8 @@ public class InquilinoDAO {
 
     public int insertar(Inquilino i) throws SQLException {
         String sql = "INSERT INTO Inquilinos (nombre, apellidos, dni, telefono, email) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, i.getNombre());
             ps.setString(2, i.getApellidos());
             ps.setString(3, i.getDni());
@@ -73,7 +77,8 @@ public class InquilinoDAO {
     public boolean actualizar(Inquilino i) throws SQLException {
         String sql = "UPDATE Inquilinos SET nombre=?, apellidos=?, dni=?, telefono=?, email=? " +
                      "WHERE id_inquilino=?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, i.getNombre());
             ps.setString(2, i.getApellidos());
             ps.setString(3, i.getDni());
@@ -87,7 +92,8 @@ public class InquilinoDAO {
 
     public boolean eliminar(int idInquilino) throws SQLException {
         String sql = "DELETE FROM Inquilinos WHERE id_inquilino = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idInquilino);
             return ps.executeUpdate() > 0;
         }

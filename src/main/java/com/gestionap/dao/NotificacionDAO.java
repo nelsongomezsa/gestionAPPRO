@@ -51,7 +51,8 @@ public class NotificacionDAO {
             WHERE c.fecha_fin BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
               AND c.fecha_inicio <= CURDATE()
             """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String ref = "contrato_vence_" + rs.getInt("id_contrato");
@@ -80,7 +81,8 @@ public class NotificacionDAO {
               )
             """;
         String mes = LocalDate.now().getYear() + "_" + LocalDate.now().getMonthValue();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String ref = "pago_pendiente_" + rs.getInt("id_contrato") + "_" + mes;
@@ -100,7 +102,8 @@ public class NotificacionDAO {
             WHERE estado IN ('pendiente', 'en_proceso')
               AND fecha <= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
             """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String ref = "incidencia_antigua_" + rs.getInt("id_incidencia");
@@ -127,7 +130,8 @@ public class NotificacionDAO {
                     AND c.fecha_fin >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
               )
             """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String ref = "mantenimiento_largo_" + rs.getInt("id_habitacion");
@@ -144,7 +148,8 @@ public class NotificacionDAO {
     private boolean existeHoy(int idUsuario, String referencia) throws SQLException {
         String sql = "SELECT COUNT(*) FROM Notificaciones " +
                      "WHERE id_usuario = ? AND referencia = ? AND DATE(fecha) = CURDATE()";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             ps.setString(2, referencia);
             try (ResultSet rs = ps.executeQuery()) {
@@ -157,7 +162,8 @@ public class NotificacionDAO {
                           String descripcion, String referencia) throws SQLException {
         String sql = "INSERT INTO Notificaciones (tipo, titulo, descripcion, referencia, id_usuario) " +
                      "VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, tipo);
             ps.setString(2, titulo);
             ps.setString(3, descripcion);
@@ -173,7 +179,8 @@ public class NotificacionDAO {
         String sql = "SELECT id_notificacion, tipo, titulo, descripcion, referencia, fecha, leida " +
                      "FROM Notificaciones WHERE id_usuario = ? AND leida = 0 ORDER BY fecha DESC LIMIT 50";
         List<Notificacion> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) lista.add(mapear(rs, idUsuario));
@@ -186,7 +193,8 @@ public class NotificacionDAO {
         String sql = "SELECT id_notificacion, tipo, titulo, descripcion, referencia, fecha, leida " +
                      "FROM Notificaciones WHERE id_usuario = ? ORDER BY leida ASC, fecha DESC LIMIT 100";
         List<Notificacion> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) lista.add(mapear(rs, idUsuario));
@@ -197,7 +205,8 @@ public class NotificacionDAO {
 
     public int contarNoLeidas(int idUsuario) throws SQLException {
         String sql = "SELECT COUNT(*) FROM Notificaciones WHERE id_usuario = ? AND leida = 0";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
@@ -208,7 +217,8 @@ public class NotificacionDAO {
 
     public void marcarTodasLeidas(int idUsuario) throws SQLException {
         String sql = "UPDATE Notificaciones SET leida = 1 WHERE id_usuario = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             ps.executeUpdate();
         }
@@ -216,7 +226,8 @@ public class NotificacionDAO {
 
     public void marcarLeida(int idNotificacion) throws SQLException {
         String sql = "UPDATE Notificaciones SET leida = 1 WHERE id_notificacion = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idNotificacion);
             ps.executeUpdate();
         }
