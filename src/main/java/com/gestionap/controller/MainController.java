@@ -3,6 +3,8 @@ package com.gestionap.controller;
 import com.gestionap.dao.NotificacionDAO;
 import com.gestionap.model.Notificacion;
 import com.gestionap.model.Usuario;
+import com.gestionap.service.HistorialNavegacion;
+import com.gestionap.service.RutasNotificacion;
 import com.gestionap.utils.Session;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -22,9 +24,10 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Stack;
 
 public class MainController implements Initializable {
 
@@ -60,14 +63,12 @@ public class MainController implements Initializable {
     private static final String CSS_CLARO  = "/com/gestionap/styles-light.css";
 
     private List<Button>          botonesNav;
+    private Map<String, Button>   botonPorRuta;
     private NotificacionDAO       notificacionDAO;
     private boolean               modoClaro = false;
     private Node                  vistaActual;
 
-    private final Stack<String> historialPaths   = new Stack<>();
-    private final Stack<Button> historialBotones = new Stack<>();
-    private String              vistaActualPath  = null;
-    private Button              botonActual      = null;
+    private final HistorialNavegacion historial = new HistorialNavegacion();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -77,6 +78,19 @@ public class MainController implements Initializable {
                              btnContratos, btnPagos, btnCalendario, btnIncidencias,
                              btnEstadisticas, btnUsuarios, btnPerfil,
                              btnRentabilidad, btnAnalisisPisos);
+        botonPorRuta = new HashMap<>();
+        botonPorRuta.put("/com/gestionap/dashboard-view.fxml",      btnDashboard);
+        botonPorRuta.put("/com/gestionap/habitaciones-view.fxml",   btnHabitaciones);
+        botonPorRuta.put("/com/gestionap/inquilinos-view.fxml",     btnInquilinos);
+        botonPorRuta.put("/com/gestionap/contratos-view.fxml",      btnContratos);
+        botonPorRuta.put("/com/gestionap/pagos-view.fxml",          btnPagos);
+        botonPorRuta.put("/com/gestionap/calendario-view.fxml",     btnCalendario);
+        botonPorRuta.put("/com/gestionap/incidencias-view.fxml",    btnIncidencias);
+        botonPorRuta.put("/com/gestionap/estadisticas-view.fxml",   btnEstadisticas);
+        botonPorRuta.put("/com/gestionap/usuarios-view.fxml",       btnUsuarios);
+        botonPorRuta.put("/com/gestionap/perfil-view.fxml",         btnPerfil);
+        botonPorRuta.put("/com/gestionap/rentabilidad-view.fxml",   btnRentabilidad);
+        botonPorRuta.put("/com/gestionap/analisis-pisos-view.fxml", btnAnalisisPisos);
         initGUI();
         actions();
         configurarCierreVentana();
@@ -209,10 +223,7 @@ public class MainController implements Initializable {
     // ── Carga de vistas ─────────────────────────────────────────
 
     private void cargarVista(String fxmlPath, Button boton) {
-        if (vistaActualPath != null && !fxmlPath.equals(vistaActualPath)) {
-            historialPaths.push(vistaActualPath);
-            historialBotones.push(botonActual);
-        }
+        historial.apilarActualSiCambia(fxmlPath);
         cargarVistaInternal(fxmlPath, boton);
         actualizarBtnAtras();
     }
@@ -223,8 +234,7 @@ public class MainController implements Initializable {
             Node vista = loader.load();
             aplicarTemaAVista(vista);
             vistaActual = vista;
-            vistaActualPath = fxmlPath;
-            botonActual = boton;
+            historial.fijarActual(fxmlPath);
             panelCentro.getChildren().setAll(vista);
             botonesNav.forEach(b -> b.getStyleClass().remove("active"));
             if (boton != null && !boton.getStyleClass().contains("active"))
@@ -235,26 +245,20 @@ public class MainController implements Initializable {
     }
 
     public void volverAtras() {
-        if (!historialPaths.isEmpty()) {
-            String path  = historialPaths.pop();
-            Button boton = historialBotones.pop();
-            cargarVistaInternal(path, boton);
+        historial.desapilar().ifPresent(ruta -> {
+            cargarVistaInternal(ruta, botonPorRuta.get(ruta));
             actualizarBtnAtras();
-        }
+        });
     }
 
     public void pushCurrentToHistorial() {
-        if (vistaActualPath != null) {
-            historialPaths.push(vistaActualPath);
-            historialBotones.push(botonActual);
-            vistaActualPath = null;
-            botonActual = null;
+        if (historial.apilarActualYLimpiar()) {
             actualizarBtnAtras();
         }
     }
 
     private void actualizarBtnAtras() {
-        boolean hay = !historialPaths.isEmpty();
+        boolean hay = historial.hayHistorial();
         btnAtras.setVisible(hay);
         btnAtras.setManaged(hay);
     }
@@ -266,8 +270,7 @@ public class MainController implements Initializable {
             Node vista = loader.load();
             aplicarTemaAVista(vista);
             vistaActual = vista;
-            vistaActualPath = "/com/gestionap/inquilinos-view.fxml";
-            botonActual = btnInquilinos;
+            historial.fijarActual("/com/gestionap/inquilinos-view.fxml");
             panelCentro.getChildren().setAll(vista);
             botonesNav.forEach(b -> b.getStyleClass().remove("active"));
             if (!btnInquilinos.getStyleClass().contains("active"))
@@ -431,15 +434,8 @@ public class MainController implements Initializable {
     }
 
     private void navegarPorTipo(String tipo) {
-        if (tipo == null) return;
-        switch (tipo) {
-            case "contrato_vence", "pago_pendiente" ->
-                    cargarVista("/com/gestionap/contratos-view.fxml", btnContratos);
-            case "incidencia_antigua" ->
-                    cargarVista("/com/gestionap/incidencias-view.fxml", btnIncidencias);
-            case "mantenimiento_largo" ->
-                    cargarVista("/com/gestionap/habitaciones-view.fxml", btnHabitaciones);
-        }
+        RutasNotificacion.rutaParaTipo(tipo)
+                .ifPresent(ruta -> cargarVista(ruta, botonPorRuta.get(ruta)));
     }
 
     // ── Badge incidencias ────────────────────────────────────────
