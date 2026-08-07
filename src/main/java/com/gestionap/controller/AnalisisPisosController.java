@@ -4,6 +4,7 @@ import com.gestionap.dao.AnalisisPisoDAO;
 import com.gestionap.dao.DatosPisoDAO;
 import com.gestionap.model.AnalisisPiso;
 import com.gestionap.model.DatosPiso;
+import com.gestionap.service.CalculadoraFinancieraPiso;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,8 +17,6 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -360,89 +359,83 @@ public class AnalisisPisosController implements Initializable {
         Label lblSemaforo   = new Label("—");
         lblSemaforo.setStyle("-fx-font-size: 13px; -fx-font-weight: bold;");
 
-        // ── Lógica de recalculo ──
+        // ── Lógica de recalculo — delega el cálculo a CalculadoraFinancieraPiso,
+        // el controller solo lee los campos, arma la Entrada y pinta el Resultado.
         Runnable recalcular = () -> {
-            BigDecimal precio     = parse(tfPrecio.getText());
-            BigDecimal itp        = parse(tfItp.getText());
-            BigDecimal notaria    = parse(tfNotaria.getText());
-            BigDecimal registro   = parse(tfRegistro.getText());
-            BigDecimal reforma    = parse(tfReforma.getText());
-            BigDecimal mobiliario = parse(tfMobiliario.getText());
-            BigDecimal otros      = parse(tfOtros.getText());
+            var adquisicion = new CalculadoraFinancieraPiso.DatosAdquisicion(
+                    CalculadoraFinancieraPiso.parse(tfPrecio.getText()),
+                    CalculadoraFinancieraPiso.parse(tfItp.getText()),
+                    CalculadoraFinancieraPiso.parse(tfNotaria.getText()),
+                    CalculadoraFinancieraPiso.parse(tfRegistro.getText()),
+                    CalculadoraFinancieraPiso.parse(tfReforma.getText()),
+                    CalculadoraFinancieraPiso.parse(tfMobiliario.getText()),
+                    CalculadoraFinancieraPiso.parse(tfOtros.getText()));
 
-            BigDecimal invTotal = precio.add(itp).add(notaria).add(registro)
-                    .add(reforma).add(mobiliario).add(otros);
-            lblTotalAdq.setText(String.format("%,.2f €", invTotal));
+            var hipoteca = new CalculadoraFinancieraPiso.DatosHipoteca(
+                    cbHipoteca.isSelected(),
+                    CalculadoraFinancieraPiso.parse(tfImporteHip.getText()),
+                    CalculadoraFinancieraPiso.parse(tfTipoInt.getText()),
+                    CalculadoraFinancieraPiso.parseInt(tfPlazo.getText()));
 
-            BigDecimal cuota = BigDecimal.ZERO;
+            var gastos = new CalculadoraFinancieraPiso.DatosGastos(
+                    CalculadoraFinancieraPiso.parse(tfIbi.getText()),
+                    CalculadoraFinancieraPiso.parse(tfComunidad.getText()),
+                    CalculadoraFinancieraPiso.parse(tfSeguro.getText()),
+                    CalculadoraFinancieraPiso.parse(tfMantenimiento.getText()));
+
+            var entrada = new CalculadoraFinancieraPiso.Entrada(
+                    adquisicion, hipoteca, gastos,
+                    CalculadoraFinancieraPiso.parse(tfValorMercado.getText()),
+                    piso.getIngresosMes());
+
+            CalculadoraFinancieraPiso.Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+            lblTotalAdq.setText(String.format("%,.2f €", r.inversionTotal()));
+
             if (cbHipoteca.isSelected()) {
-                BigDecimal importe = parse(tfImporteHip.getText());
-                BigDecimal tasa    = parse(tfTipoInt.getText());
-                int        plazo   = parseInt(tfPlazo.getText());
-                cuota = calcularCuotaMensual(importe, tasa, plazo);
-                lblCuota.setText(String.format("%,.2f €/mes", cuota));
+                lblCuota.setText(String.format("%,.2f €/mes", r.cuotaMensualHipoteca()));
             } else {
                 lblCuota.setText("—");
             }
 
-            BigDecimal ibi          = parse(tfIbi.getText());
-            BigDecimal comunidad    = parse(tfComunidad.getText());
-            BigDecimal seguro       = parse(tfSeguro.getText());
-            BigDecimal mantenimiento = parse(tfMantenimiento.getText());
-            BigDecimal totalGastos  = ibi.add(comunidad.multiply(BigDecimal.valueOf(12)))
-                    .add(seguro).add(mantenimiento);
-            lblTotalGastos.setText(String.format("%,.2f €/año", totalGastos));
+            lblTotalGastos.setText(String.format("%,.2f €/año", r.totalGastosAnuales()));
 
-            // Resultados
-            BigDecimal ingresosMes    = piso.getIngresosMes();
-            BigDecimal ingresosAnuales = ingresosMes.multiply(BigDecimal.valueOf(12));
-            BigDecimal hipAnual        = cuota.multiply(BigDecimal.valueOf(12));
-            BigDecimal importeHip      = cbHipoteca.isSelected() ? parse(tfImporteHip.getText()) : BigDecimal.ZERO;
-            BigDecimal capitalPropio   = invTotal.subtract(importeHip);
-            BigDecimal valorMercado    = parse(tfValorMercado.getText());
+            lblInvTotal.setText(String.format("%,.2f €", r.inversionTotal()));
 
-            lblInvTotal.setText(String.format("%,.2f €", invTotal));
+            // Si inversionTotal <= 0, r.rentabilidadBrutaPct()/calificacion() vienen
+            // null (no calculables) y, como antes de la extracción, los labels NO
+            // se tocan — se quedan con el último valor mostrado.
+            if (r.rentabilidadBrutaPct() != null) {
+                lblRentBruta.setText(String.format("%.2f%%", r.rentabilidadBrutaPct()));
+                lblRentNeta.setText(String.format("%.2f%%", r.rentabilidadNetaPct()));
 
-            if (invTotal.compareTo(BigDecimal.ZERO) > 0) {
-                double rentBruta = ingresosAnuales.divide(invTotal, 6, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)).doubleValue();
-                double rentNeta  = ingresosAnuales.subtract(totalGastos).subtract(hipAnual)
-                        .divide(invTotal, 6, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)).doubleValue();
-                lblRentBruta.setText(String.format("%.2f%%", rentBruta));
-                lblRentNeta.setText(String.format("%.2f%%", rentNeta));
-
-                // Semáforo
-                if (rentBruta > 7) {
-                    lblSemaforo.setText("🟢  EXCELENTE (>7%)");
-                    lblSemaforo.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 13px; -fx-font-weight: bold;");
-                } else if (rentBruta >= 5) {
-                    lblSemaforo.setText("🟡  ACEPTABLE (5-7%)");
-                    lblSemaforo.setStyle("-fx-text-fill: #f39c12; -fx-font-size: 13px; -fx-font-weight: bold;");
-                } else {
-                    lblSemaforo.setText("🔴  A REVISAR (<5%)");
-                    lblSemaforo.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 13px; -fx-font-weight: bold;");
+                switch (r.calificacion()) {
+                    case EXCELENTE -> {
+                        lblSemaforo.setText("🟢  EXCELENTE (>7%)");
+                        lblSemaforo.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 13px; -fx-font-weight: bold;");
+                    }
+                    case ACEPTABLE -> {
+                        lblSemaforo.setText("🟡  ACEPTABLE (5-7%)");
+                        lblSemaforo.setStyle("-fx-text-fill: #f39c12; -fx-font-size: 13px; -fx-font-weight: bold;");
+                    }
+                    case A_REVISAR -> {
+                        lblSemaforo.setText("🔴  A REVISAR (<5%)");
+                        lblSemaforo.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 13px; -fx-font-weight: bold;");
+                    }
                 }
             }
 
-            BigDecimal gastosMes = totalGastos.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
-            BigDecimal cfMes = ingresosMes.subtract(cuota).subtract(gastosMes);
-            lblCFMes.setText(String.format("%,.2f €/mes", cfMes));
+            lblCFMes.setText(String.format("%,.2f €/mes", r.cashFlowMensual()));
 
-            if (capitalPropio.compareTo(BigDecimal.ZERO) > 0) {
-                double roce = cfMes.multiply(BigDecimal.valueOf(12))
-                        .divide(capitalPropio, 6, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)).doubleValue();
-                lblROCE.setText(String.format("%.2f%%", roce));
+            if (r.rocePct() != null) {
+                lblROCE.setText(String.format("%.2f%%", r.rocePct()));
             }
-            lblCapPropio.setText(String.format("%,.2f €", capitalPropio));
+            lblCapPropio.setText(String.format("%,.2f €", r.capitalPropio()));
 
-            BigDecimal plusvalia = valorMercado.subtract(invTotal);
-            lblPlusvalia.setText(String.format("%,.2f €", plusvalia));
+            lblPlusvalia.setText(String.format("%,.2f €", r.plusvaliaLatente()));
 
-            if (ingresosAnuales.compareTo(BigDecimal.ZERO) > 0) {
-                double per = invTotal.divide(ingresosAnuales, 2, RoundingMode.HALF_UP).doubleValue();
-                lblPER.setText(String.format("%.1f años", per));
+            if (r.perAnios() != null) {
+                lblPER.setText(String.format("%.1f años", r.perAnios()));
             }
         };
 
@@ -527,24 +520,24 @@ public class AnalisisPisosController implements Initializable {
             if (bt != btnGuardar) return null;
             DatosPiso d = new DatosPiso(piso.getIdPiso());
             d.setId(datosCargados.getId());
-            d.setPrecioCompra(parse(tfPrecio.getText()));
-            d.setItpPagado(parse(tfItp.getText()));
-            d.setGastosNotaria(parse(tfNotaria.getText()));
-            d.setGastosRegistro(parse(tfRegistro.getText()));
-            d.setCosteReforma(parse(tfReforma.getText()));
-            d.setCosteMobiliario(parse(tfMobiliario.getText()));
-            d.setOtrosGastosCompra(parse(tfOtros.getText()));
+            d.setPrecioCompra(CalculadoraFinancieraPiso.parse(tfPrecio.getText()));
+            d.setItpPagado(CalculadoraFinancieraPiso.parse(tfItp.getText()));
+            d.setGastosNotaria(CalculadoraFinancieraPiso.parse(tfNotaria.getText()));
+            d.setGastosRegistro(CalculadoraFinancieraPiso.parse(tfRegistro.getText()));
+            d.setCosteReforma(CalculadoraFinancieraPiso.parse(tfReforma.getText()));
+            d.setCosteMobiliario(CalculadoraFinancieraPiso.parse(tfMobiliario.getText()));
+            d.setOtrosGastosCompra(CalculadoraFinancieraPiso.parse(tfOtros.getText()));
             d.setTieneHipoteca(cbHipoteca.isSelected());
-            d.setImporteHipoteca(parse(tfImporteHip.getText()));
-            d.setTipoInteres(parse(tfTipoInt.getText()));
-            d.setPlazoAnos(parseInt(tfPlazo.getText()));
-            d.setCuotaMensualHipoteca(calcularCuotaMensual(
+            d.setImporteHipoteca(CalculadoraFinancieraPiso.parse(tfImporteHip.getText()));
+            d.setTipoInteres(CalculadoraFinancieraPiso.parse(tfTipoInt.getText()));
+            d.setPlazoAnos(CalculadoraFinancieraPiso.parseInt(tfPlazo.getText()));
+            d.setCuotaMensualHipoteca(CalculadoraFinancieraPiso.cuotaMensual(
                     d.getImporteHipoteca(), d.getTipoInteres(), d.getPlazoAnos()));
-            d.setGastoIbiAnual(parse(tfIbi.getText()));
-            d.setGastoComunidadMensual(parse(tfComunidad.getText()));
-            d.setGastoSeguroAnual(parse(tfSeguro.getText()));
-            d.setGastoMantenimientoAnual(parse(tfMantenimiento.getText()));
-            d.setValorMercadoActual(parse(tfValorMercado.getText()));
+            d.setGastoIbiAnual(CalculadoraFinancieraPiso.parse(tfIbi.getText()));
+            d.setGastoComunidadMensual(CalculadoraFinancieraPiso.parse(tfComunidad.getText()));
+            d.setGastoSeguroAnual(CalculadoraFinancieraPiso.parse(tfSeguro.getText()));
+            d.setGastoMantenimientoAnual(CalculadoraFinancieraPiso.parse(tfMantenimiento.getText()));
+            d.setValorMercadoActual(CalculadoraFinancieraPiso.parse(tfValorMercado.getText()));
             d.setFechaCompra(dpFechaCompra.getValue());
             d.setNotas(taNotas.getText().trim());
             return d;
@@ -638,31 +631,6 @@ public class AnalisisPisosController implements Initializable {
         Label l = new Label(texto);
         l.setStyle("-fx-text-fill: #1abc9c; -fx-font-size: 13px; -fx-font-weight: bold;");
         return l;
-    }
-
-    private BigDecimal calcularCuotaMensual(BigDecimal principal, BigDecimal tasaAnual, int plazoAnos) {
-        if (principal == null || tasaAnual == null || plazoAnos <= 0
-                || principal.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
-        double P = principal.doubleValue();
-        double r = tasaAnual.doubleValue() / 100.0 / 12.0;
-        int    n = plazoAnos * 12;
-        if (r == 0) return BigDecimal.valueOf(P / n).setScale(2, RoundingMode.HALF_UP);
-        double M = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
-        return BigDecimal.valueOf(M).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal parse(String s) {
-        try {
-            if (s == null || s.isBlank()) return BigDecimal.ZERO;
-            return new BigDecimal(s.trim().replace(",", "."));
-        } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    private int parseInt(String s) {
-        try { return s == null || s.isBlank() ? 0 : Integer.parseInt(s.trim()); }
-        catch (NumberFormatException e) { return 0; }
     }
 
     // ── Navegación a detalle ──────────────────────────────────────
