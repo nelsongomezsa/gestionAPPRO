@@ -22,7 +22,8 @@ public class DatosPisoDAO {
                 FROM DatosPiso
                 WHERE id_piso = ?
                 """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPiso);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearFila(rs);
@@ -62,7 +63,8 @@ public class DatosPisoDAO {
                     fecha_compra              = VALUES(fecha_compra),
                     notas                     = VALUES(notas)
                 """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             int i = 1;
             ps.setInt   (i++, d.getIdPiso());
             ps.setBigDecimal(i++, d.getPrecioCompra());

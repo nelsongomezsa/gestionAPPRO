@@ -30,7 +30,8 @@ public class IncidenciaDAO {
                 ORDER BY inc.fecha DESC
                 """;
         List<Incidencia> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapearFila(rs));
         }
@@ -51,7 +52,8 @@ public class IncidenciaDAO {
                 ORDER BY inc.fecha ASC
                 """;
         List<Incidencia> lista = new ArrayList<>();
-        try (PreparedStatement ps = getConexion().prepareStatement(sql);
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapearFila(rs));
         }
@@ -70,7 +72,8 @@ public class IncidenciaDAO {
                 JOIN Habitaciones h ON inc.id_habitacion = h.id_habitacion
                 WHERE inc.id_incidencia = ?
                 """;
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idIncidencia);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -86,7 +89,8 @@ public class IncidenciaDAO {
     public int insertar(Incidencia inc) throws SQLException {
         String sql = "INSERT INTO Incidencias (id_habitacion, id_inquilino, descripcion, estado, fecha) " +
                      "VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, inc.getIdHabitacion());
             ps.setInt(2, inc.getIdInquilino());
             ps.setString(3, inc.getDescripcion());
@@ -102,7 +106,8 @@ public class IncidenciaDAO {
 
     public boolean actualizarEstado(int idIncidencia, Estado nuevoEstado) throws SQLException {
         String sql = "UPDATE Incidencias SET estado = ? WHERE id_incidencia = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, nuevoEstado.name());
             ps.setInt(2, idIncidencia);
             return ps.executeUpdate() > 0;
@@ -111,7 +116,8 @@ public class IncidenciaDAO {
 
     public boolean eliminar(int idIncidencia) throws SQLException {
         String sql = "DELETE FROM Incidencias WHERE id_incidencia = ?";
-        try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+        try (Connection con = getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idIncidencia);
             return ps.executeUpdate() > 0;
         }
@@ -147,7 +153,8 @@ public class IncidenciaDAO {
                     .collect(Collectors.joining(","));
             String sql = "SELECT id_incidencia, COALESCE(coste_reparacion, 0) AS coste " +
                          "FROM Incidencias WHERE id_incidencia IN (" + ids + ")";
-            try (PreparedStatement ps = getConexion().prepareStatement(sql);
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql);
                  ResultSet rs = ps.executeQuery()) {
                 Map<Integer, BigDecimal> costes = new HashMap<>();
                 while (rs.next()) costes.put(rs.getInt(1), rs.getBigDecimal(2));
@@ -165,7 +172,8 @@ public class IncidenciaDAO {
     private BigDecimal cargarCosteIndividual(int idIncidencia) {
         try {
             String sql = "SELECT COALESCE(coste_reparacion, 0) FROM Incidencias WHERE id_incidencia = ?";
-            try (PreparedStatement ps = getConexion().prepareStatement(sql)) {
+            try (Connection con = getConexion();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, idIncidencia);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) return rs.getBigDecimal(1);
