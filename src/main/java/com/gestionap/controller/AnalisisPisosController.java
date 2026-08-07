@@ -528,7 +528,11 @@ public class AnalisisPisosController implements Initializable {
             d.setCosteMobiliario(CalculadoraFinancieraPiso.parse(tfMobiliario.getText()));
             d.setOtrosGastosCompra(CalculadoraFinancieraPiso.parse(tfOtros.getText()));
             d.setTieneHipoteca(cbHipoteca.isSelected());
-            d.setImporteHipoteca(CalculadoraFinancieraPiso.parse(tfImporteHip.getText()));
+            // Si la hipoteca no está activa, el importe se guarda en 0 sin
+            // importar qué texto quede en el campo — misma regla que usa el
+            // recálculo en vivo, vía el único sitio que la decide.
+            d.setImporteHipoteca(CalculadoraFinancieraPiso.importeHipotecaEfectivo(
+                    cbHipoteca.isSelected(), CalculadoraFinancieraPiso.parse(tfImporteHip.getText())));
             d.setTipoInteres(CalculadoraFinancieraPiso.parse(tfTipoInt.getText()));
             d.setPlazoAnos(CalculadoraFinancieraPiso.parseInt(tfPlazo.getText()));
             d.setCuotaMensualHipoteca(CalculadoraFinancieraPiso.cuotaMensual(
