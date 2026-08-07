@@ -1,6 +1,12 @@
-> **Nota:** esta es la version en evolucion del proyecto GestionAp original (ver [GestionAP](https://github.com/nelsongomezsa/GestionAP), entrega oficial del Proyecto Intermodular de 1 DAM). Aqui continuo aplicando mejoras y refactors fuera del plazo de entrega.
->
-# GestionAp
+# GestionAp PRO
+
+<div align="center">
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=20&pause=1200&color=2EE6A6&center=true&vCenter=true&width=560&lines=App+de+gesti%C3%B3n+de+alquiler+de+habitaciones;Java+17+%2B+JavaFX+%2B+MySQL;Arquitectura+en+capas+%7C+JDBC+puro)](https://github.com/nelsongomezsa/gestionAPPRO)
+
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white) ![JavaFX](https://img.shields.io/badge/JavaFX-UI-0095D5?style=for-the-badge&logo=java&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![Maven](https://img.shields.io/badge/Maven-3.9%2B-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white) ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
+
+</div>
 
 Proyecto Intermodular de 1º DAM · Prometeo by The Power
 
@@ -49,8 +55,8 @@ Necesitas tener instalado en tu máquina:
 
 **1. Clona el repositorio**
 ```bash
-git clone https://github.com/nelsongomezsa/gestion-alquiler-habitaciones.git
-cd gestion-alquiler-habitaciones
+git clone https://github.com/nelsongomezsa/gestionAPPRO.git
+cd gestionAPPRO
 ```
 
 **2. Crea la base de datos**
@@ -83,7 +89,7 @@ mvn javafx:run
 ## Estructura del proyecto
 
 ```
-gestion-alquiler-habitaciones/
+gestionAPPRO/
 ├── src/
 │   └── main/
 │       ├── java/com/gestionap/
