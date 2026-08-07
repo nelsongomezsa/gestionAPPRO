@@ -89,7 +89,7 @@ public final class CalculadoraFinancieraPiso {
 
         BigDecimal ingresosAnuales = e.ingresosMes().multiply(BigDecimal.valueOf(12));
         BigDecimal hipAnual = cuota.multiply(BigDecimal.valueOf(12));
-        BigDecimal importeHipEfectivo = e.hipoteca().activa() ? e.hipoteca().importe() : BigDecimal.ZERO;
+        BigDecimal importeHipEfectivo = importeHipotecaEfectivo(e.hipoteca().activa(), e.hipoteca().importe());
         BigDecimal capitalPropio = invTotal.subtract(importeHipEfectivo);
 
         Double rentBruta = null;
@@ -126,6 +126,18 @@ public final class CalculadoraFinancieraPiso {
         return new Resultado(invTotal, cuota, totalGastosAnuales,
                 rentBruta, rentNeta, calificacion,
                 cfMes, roce, capitalPropio, plusvalia, per);
+    }
+
+    /**
+     * Importe de hipoteca a usar en cualquier cálculo o guardado: si la
+     * hipoteca no está activa, es 0 SIEMPRE, sin importar qué texto haya
+     * quedado en el campo (p. ej. el usuario desmarcó "Tiene hipoteca" pero
+     * no borró el importe). Única fuente de verdad para esta regla — tanto
+     * calcular() como quien guarda los datos deben pasar por aquí, para que
+     * no puedan divergir entre sí.
+     */
+    public static BigDecimal importeHipotecaEfectivo(boolean hipotecaActiva, BigDecimal importe) {
+        return hipotecaActiva ? importe : BigDecimal.ZERO;
     }
 
     /** Cuota mensual de una hipoteca a cuota fija (amortización francesa). */

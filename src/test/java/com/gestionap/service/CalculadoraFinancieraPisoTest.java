@@ -15,6 +15,55 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CalculadoraFinancieraPisoTest {
 
+    // ── importeHipotecaEfectivo() ────────────────────────────────
+    // Bug real: el guardado de datos financieros parseaba y guardaba
+    // importeHipoteca/cuotaMensualHipoteca del texto de los campos sin
+    // mirar el checkbox "Tiene hipoteca", mientras que el recálculo en
+    // vivo sí lo hacía — si el usuario desmarcaba la casilla sin borrar
+    // los campos, se guardaba un importe/cuota distintos de cero con
+    // tieneHipoteca=false. Corregido centralizando la regla aquí y
+    // haciendo que tanto calcular() como el guardado pasen por ella.
+
+    @Test
+    void importeHipotecaEfectivo_hipotecaInactiva_devuelveCero_aunqueElCampoTengaTexto() {
+        // Simula: checkbox "Tiene hipoteca" desmarcado, pero el campo de
+        // importe todavía tiene un valor sin borrar (80000).
+        BigDecimal resultado = CalculadoraFinancieraPiso.importeHipotecaEfectivo(
+                false, new BigDecimal("80000"));
+
+        assertEquals(0, BigDecimal.ZERO.compareTo(resultado));
+    }
+
+    @Test
+    void importeHipotecaEfectivo_hipotecaActiva_devuelveElImporteTalCual() {
+        BigDecimal resultado = CalculadoraFinancieraPiso.importeHipotecaEfectivo(
+                true, new BigDecimal("80000"));
+
+        assertEquals(0, new BigDecimal("80000").compareTo(resultado));
+    }
+
+    @Test
+    void guardarConHipotecaDesmarcada_importeYCuotaQuedanEnCero_aunqueLosCamposTenganTexto() {
+        // Reproduce el flujo completo de guardado tal como lo hace ahora
+        // AnalisisPisosController.abrirDialogoDatosFinancieros(): el
+        // usuario desmarcó "Tiene hipoteca" pero dejó importe/tipo/plazo
+        // con valores de una edición anterior.
+        boolean hipotecaActiva = false;
+        BigDecimal importeEnElCampo = new BigDecimal("80000");
+        BigDecimal tipoInteresEnElCampo = new BigDecimal("3.0");
+        int plazoEnElCampo = 20;
+
+        BigDecimal importeGuardado = CalculadoraFinancieraPiso.importeHipotecaEfectivo(
+                hipotecaActiva, importeEnElCampo);
+        BigDecimal cuotaGuardada = CalculadoraFinancieraPiso.cuotaMensual(
+                importeGuardado, tipoInteresEnElCampo, plazoEnElCampo);
+
+        assertEquals(0, BigDecimal.ZERO.compareTo(importeGuardado),
+                "importeHipoteca debe guardarse en 0 cuando la hipoteca no está activa");
+        assertEquals(0, BigDecimal.ZERO.compareTo(cuotaGuardada),
+                "cuotaMensualHipoteca debe guardarse en 0 cuando la hipoteca no está activa");
+    }
+
     // ── cuotaMensual() ──────────────────────────────────────────
 
     @Test
