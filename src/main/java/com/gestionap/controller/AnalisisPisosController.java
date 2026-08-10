@@ -276,12 +276,6 @@ public class AnalisisPisosController implements Initializable {
         return box;
     }
 
-    private Region spacer() {
-        Region r = new Region();
-        HBox.setHgrow(r, Priority.ALWAYS);
-        return r;
-    }
-
     // ── Diálogo de datos financieros ──────────────────────────────
 
     private void abrirDialogoDatosFinancieros(AnalisisPiso piso) {

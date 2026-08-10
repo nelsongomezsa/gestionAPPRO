@@ -1,5 +1,6 @@
 package com.gestionap;
 
+import com.gestionap.database.DatabaseConnection;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,6 +19,11 @@ public class HelloApplication extends Application {
         stage.setScene(scene);
         stage.setResizable(true);
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        DatabaseConnection.getInstance().cerrarConexion();
     }
 
     public static void main(String[] args) {

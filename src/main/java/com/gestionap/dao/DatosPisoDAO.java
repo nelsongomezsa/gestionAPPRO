@@ -4,7 +4,6 @@ import com.gestionap.database.DatabaseConnection;
 import com.gestionap.model.DatosPiso;
 
 import java.sql.*;
-import java.time.LocalDate;
 
 public class DatosPisoDAO {
 
