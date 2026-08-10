@@ -7,6 +7,7 @@ import com.gestionap.dao.InquilinoDAO;
 import com.gestionap.model.Contrato;
 import com.gestionap.model.Habitacion;
 import com.gestionap.model.Inquilino;
+import com.gestionap.service.VencimientoContrato;
 import com.gestionap.utils.ContratoGenerator;
 import com.gestionap.utils.EmailService;
 import com.gestionap.utils.PdfExporter;
@@ -30,7 +31,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -106,7 +106,7 @@ public class ContratosController implements Initializable {
         colDiasRestantes.setCellValueFactory(d -> {
             Contrato c = d.getValue();
             if (!c.isActivo()) return new SimpleStringProperty("—");
-            long dias = ChronoUnit.DAYS.between(LocalDate.now(), c.getFechaFin());
+            long dias = VencimientoContrato.diasHastaVencimiento(c.getFechaFin());
             return new SimpleStringProperty(String.valueOf(dias));
         });
         colDiasRestantes.setCellFactory(col -> new TableCell<>() {
@@ -114,16 +114,13 @@ public class ContratosController implements Initializable {
                 super.updateItem(v, empty);
                 if (empty || v == null) { setText(null); setStyle(""); return; }
                 setText(v.equals("—") ? "—" : v + " d");
-                if (!v.equals("—")) {
-                    long dias = Long.parseLong(v);
-                    if (dias < 0)
-                        setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    else if (dias <= 7)
-                        setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    else if (dias <= 30)
-                        setStyle("-fx-text-fill: #f39c12; -fx-font-weight: bold;");
-                    else
-                        setStyle("-fx-text-fill: #2ecc71;");
+                Contrato c = getTableRow() != null ? (Contrato) getTableRow().getItem() : null;
+                if (!v.equals("—") && c != null) {
+                    switch (VencimientoContrato.nivel(c)) {
+                        case VENCIDO, CRITICO -> setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                        case PROXIMO -> setStyle("-fx-text-fill: #f39c12; -fx-font-weight: bold;");
+                        case NORMAL -> setStyle("-fx-text-fill: #2ecc71;");
+                    }
                 } else {
                     setStyle("-fx-text-fill: #888;");
                 }

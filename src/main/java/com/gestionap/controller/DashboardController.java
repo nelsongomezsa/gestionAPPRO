@@ -9,6 +9,7 @@ import com.gestionap.model.ActividadLog;
 import com.gestionap.model.Contrato;
 import com.gestionap.model.Incidencia;
 import com.gestionap.model.Pago;
+import com.gestionap.service.VencimientoContrato;
 import com.gestionap.utils.Session;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -43,7 +44,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -231,9 +231,10 @@ public class DashboardController implements Initializable {
     }
 
     private void actualizarAlertas(List<Contrato> activos) {
-        LocalDate limite = LocalDate.now().plusDays(30);
+        // "Vence en los próximos 30 días" = cualquier nivel que no sea NORMAL
+        // (incluye VENCIDO, CRITICO y PROXIMO) — ver VencimientoContrato.
         List<Contrato> proximos = activos.stream()
-                .filter(c -> !c.getFechaFin().isAfter(limite))
+                .filter(c -> VencimientoContrato.nivel(c) != VencimientoContrato.Nivel.NORMAL)
                 .collect(Collectors.toList());
 
         if (!proximos.isEmpty()) {
@@ -252,11 +253,19 @@ public class DashboardController implements Initializable {
         }
     }
 
+    // Corte de color propio de esta lista (naranja hasta 15 días, azul después),
+    // DISTINTO del umbral de negocio PROXIMO (30 días) de VencimientoContrato.
+    // Es solo un matiz visual dentro del panel de "próximos vencimientos" —
+    // no corresponde a ninguno de los 4 niveles con nombre, así que se deja
+    // como constante local en vez de forzarlo dentro de VencimientoContrato.
+    private static final int UMBRAL_COLOR_INTERMEDIO_DIAS = 15;
+
     private void actualizarVencimientos(List<Contrato> activos) {
         if (vboxVencimientos == null) return;
-        LocalDate limite = LocalDate.now().plusDays(30);
+        // "Vence en los próximos 30 días" = cualquier nivel que no sea NORMAL
+        // (incluye VENCIDO, CRITICO y PROXIMO) — ver VencimientoContrato.
         List<Contrato> proximos = activos.stream()
-                .filter(c -> !c.getFechaFin().isAfter(limite))
+                .filter(c -> VencimientoContrato.nivel(c) != VencimientoContrato.Nivel.NORMAL)
                 .collect(Collectors.toList());
 
         vboxVencimientos.getChildren().clear();
@@ -269,7 +278,7 @@ public class DashboardController implements Initializable {
         }
 
         for (Contrato c : proximos) {
-            long dias = ChronoUnit.DAYS.between(LocalDate.now(), c.getFechaFin());
+            long dias = VencimientoContrato.diasHastaVencimiento(c.getFechaFin());
             HBox fila = new HBox(10);
             fila.setAlignment(Pos.CENTER_LEFT);
             fila.getStyleClass().add("activity-item");
@@ -280,7 +289,8 @@ public class DashboardController implements Initializable {
             VBox detalle = new VBox(1);
             Label nombre = new Label(c.getNombreInquilino() + "  —  Hab. " + c.getNumeroHabitacion());
             nombre.setStyle("-fx-text-fill: #c8c8e8; -fx-font-size: 12px; -fx-font-weight: bold;");
-            String colorDias = dias <= 7 ? "#e74c3c" : dias <= 15 ? "#f39c12" : "#4A90E2";
+            String colorDias = dias <= VencimientoContrato.UMBRAL_CRITICO_DIAS ? "#e74c3c"
+                    : dias <= UMBRAL_COLOR_INTERMEDIO_DIAS ? "#f39c12" : "#4A90E2";
             Label info = new Label("Vence en " + dias + " día(s)  ·  " + c.getFechaFin()
                     + "  ·  " + String.format("%.0f €/mes", c.getPrecioMensual().doubleValue()));
             info.setStyle("-fx-text-fill: " + colorDias + "; -fx-font-size: 11px;");
