@@ -1,5 +1,6 @@
 package com.gestionap.controller;
 
+import com.gestionap.service.CalculadoraFinancieraPiso;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -14,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -146,21 +148,16 @@ public class RentabilidadController implements Initializable {
         double comision = parse(tfComision);
         double mobil   = parse(tfMobiliario);
 
-        _itp        = _precioCompra * _itpPct / 100.0;
-        _totalCompra = _precioCompra + _itp + gastos + gastosH + reforma + comision + mobil;
+        _itp = _precioCompra * _itpPct / 100.0;
 
-        lblItpImporte.setText(fmt(_itp));
-        lblTotalCompra.setText(fmt(_totalCompra));
-
-        // Gastos mensuales/anuales
+        // Gastos mensuales (desglose por categoría para pantalla — CalculadoraFinancieraPiso
+        // no expone las categorías por separado, solo el total anual agregado)
         double ibi  = parse(tfIbiMensual);
         double seg  = parse(tfSegurosMensual);
         double com  = parse(tfComunidadMensual);
         double mant = parse(tfMantenimientoMensual);
         double vac  = parse(tfVacioMensual);
-
         _gastosMensual = ibi + seg + com + mant + vac;
-        _gastosAnual   = _gastosMensual * 12;
 
         lblIbiAnual.setText(fmt(ibi * 12));
         lblSegurosAnual.setText(fmt(seg * 12));
@@ -168,14 +165,14 @@ public class RentabilidadController implements Initializable {
         lblMantenimientoAnual.setText(fmt(mant * 12));
         lblVacioAnual.setText(fmt(vac * 12));
         lblTotalGastosMensual.setText(fmt(_gastosMensual));
-        lblTotalGastosAnual.setText(fmt(_gastosAnual));
 
         // Ingresos
         _alquilerMensual = parse(tfAlquilerMensual);
         _alquilerAnual   = _alquilerMensual * 12;
         lblAlquilerAnual.setText(fmt(_alquilerAnual));
 
-        // Revalorización
+        // Revalorización esperada (métrica propia de esta pantalla, distinta de la
+        // "plusvalía latente" de CalculadoraFinancieraPiso — no vive ahí)
         _revalorizacion = parse(tfRevalorizacion);
         if (_precioCompra > 0 && _revalorizacion > 0) {
             _plusvalia5  = _precioCompra * (Math.pow(1 + _revalorizacion / 100.0, 5)  - 1);
@@ -188,32 +185,63 @@ public class RentabilidadController implements Initializable {
             lblPlusvalia10.setText("—");
         }
 
-        // Financiación
-        double pct   = parse(tfPctFinanciado);
-        _hipoteca        = _precioCompra * (pct / 100.0);
-        _capitalAportado = _totalCompra - _hipoteca;
+        // Financiación: aquí % financiado sobre precio de compra (a diferencia del
+        // diálogo de Análisis de Pisos, que pide el importe de hipoteca directo)
+        double pct = parse(tfPctFinanciado);
+        _hipoteca  = _precioCompra * (pct / 100.0);
 
+        double tipoInteres = parse(tfTipoInteres);
+        int    plazo       = (int) parse(tfPlazo);
+
+        // ── Motor compartido con el diálogo "Datos financieros" de Análisis de
+        // Pisos: inversión total, cuota (amortización francesa), gastos anuales,
+        // rentabilidad bruta/neta y cash flow salen todos de aquí, no se
+        // reimplementan. El ITP por CCAA y el % financiado siguen siendo propios
+        // de esta pantalla y alimentan la entrada compartida. ──
+        var adquisicion = new CalculadoraFinancieraPiso.DatosAdquisicion(
+                BigDecimal.valueOf(_precioCompra), BigDecimal.valueOf(_itp),
+                BigDecimal.valueOf(gastos), BigDecimal.ZERO,
+                BigDecimal.valueOf(reforma), BigDecimal.valueOf(mobil),
+                BigDecimal.valueOf(gastosH + comision));
+        var datosHipoteca = new CalculadoraFinancieraPiso.DatosHipoteca(
+                _hipoteca > 0, BigDecimal.valueOf(_hipoteca), BigDecimal.valueOf(tipoInteres), plazo);
+        var datosGastos = new CalculadoraFinancieraPiso.DatosGastos(
+                BigDecimal.valueOf(ibi * 12), BigDecimal.valueOf(com),
+                BigDecimal.valueOf(seg * 12), BigDecimal.valueOf((mant + vac) * 12));
+        var entrada = new CalculadoraFinancieraPiso.Entrada(
+                adquisicion, datosHipoteca, datosGastos, BigDecimal.ZERO, BigDecimal.valueOf(_alquilerMensual));
+
+        CalculadoraFinancieraPiso.Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+        _totalCompra     = r.inversionTotal().doubleValue();
+        _capitalAportado = r.capitalPropio().doubleValue();
+        _cuotaMensual    = r.cuotaMensualHipoteca().doubleValue();
+        _gastosAnual     = r.totalGastosAnuales().doubleValue();
+        _cashFlowMensual = r.cashFlowMensual().doubleValue();
+        _cashFlowAnual   = _cashFlowMensual * 12;
+        _aniosRecuperar  = (_cashFlowAnual > 0 && _capitalAportado > 0)
+                           ? _capitalAportado / _cashFlowAnual : -1;
+        // inversionTotal siempre > 0 salvo precio de compra 0 y todos los gastos
+        // en 0 — en ese caso rentabilidadBrutaPct/NetaPct vienen null (no
+        // calculables); se muestran como 0.00% igual que hacía el código anterior.
+        _rentBruta = r.rentabilidadBrutaPct() != null ? r.rentabilidadBrutaPct() : 0;
+        _rentNeta  = r.rentabilidadNetaPct()  != null ? r.rentabilidadNetaPct()  : 0;
+
+        lblItpImporte.setText(fmt(_itp));
+        lblTotalCompra.setText(fmt(_totalCompra));
+        lblTotalGastosAnual.setText(fmt(_gastosAnual));
         lblHipoteca.setText(fmt(_hipoteca));
         lblCapitalAportado.setText(fmt(_capitalAportado));
 
-        // Cuota hipoteca — fórmula francesa: M = P * r(1+r)^n / ((1+r)^n - 1)
-        double tipoInteres = parse(tfTipoInteres);
-        int    plazo       = (int) parse(tfPlazo);
-        double r = tipoInteres / 100.0 / 12.0;
-        int    n = plazo * 12;
-
+        // Desglose intereses/amortización — no lo expone CalculadoraFinancieraPiso
+        // (solo da la cuota total), se deriva localmente a partir de ella.
+        int n = plazo * 12;
         if (_hipoteca > 0 && n > 0) {
-            if (r == 0) {
-                _cuotaMensual = _hipoteca / n;
-            } else {
-                double factor = Math.pow(1 + r, n);
-                _cuotaMensual = _hipoteca * (r * factor) / (factor - 1);
-            }
             double totalIntereses = _cuotaMensual * n - _hipoteca;
             _interesesMensual    = totalIntereses / n;
             _amortizacionMensual = _cuotaMensual - _interesesMensual;
         } else {
-            _cuotaMensual = _interesesMensual = _amortizacionMensual = 0;
+            _interesesMensual = _amortizacionMensual = 0;
         }
 
         lblCuotaHipotecaMensual.setText(fmt(_cuotaMensual));
@@ -224,13 +252,6 @@ public class RentabilidadController implements Initializable {
         lblAmortizacionAnual.setText(fmt(_amortizacionMensual * 12));
 
         // KPIs finales
-        _rentBruta       = _totalCompra > 0 ? (_alquilerAnual / _totalCompra) * 100.0 : 0;
-        _rentNeta        = _totalCompra > 0 ? ((_alquilerAnual - _gastosAnual) / _totalCompra) * 100.0 : 0;
-        _cashFlowMensual = _alquilerMensual - _cuotaMensual - _gastosMensual;
-        _cashFlowAnual   = _cashFlowMensual * 12;
-        _aniosRecuperar  = (_cashFlowAnual > 0 && _capitalAportado > 0)
-                           ? _capitalAportado / _cashFlowAnual : -1;
-
         lblRentabilidadBruta.setText(String.format("%.2f%%", _rentBruta));
         lblRentabilidadBruta.setStyle(kpiStyle(_rentBruta >= 6 ? "#2ecc71" : _rentBruta >= 3 ? "#f39c12" : "#e74c3c", 28));
         lblRentabilidadNeta.setText(String.format("%.2f%%", _rentNeta));

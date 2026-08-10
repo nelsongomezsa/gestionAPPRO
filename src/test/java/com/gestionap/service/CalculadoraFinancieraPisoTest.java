@@ -176,7 +176,9 @@ class CalculadoraFinancieraPisoTest {
         assertEquals(0, new BigDecimal("443.68").compareTo(r.cuotaMensualHipoteca()));
         assertEquals(0, new BigDecimal("1570").compareTo(r.totalGastosAnuales()));
         assertEquals(7.671200, r.rentabilidadBrutaPct(), 0.0001);
-        assertEquals(1.375200, r.rentabilidadNetaPct(), 0.0001);
+        // (8400 - 1570) / 109500 * 100 = 6.2374 — rentNeta NO resta la hipoteca
+        // (ver comentario en CalculadoraFinancieraPiso.calcular()).
+        assertEquals(6.2374, r.rentabilidadNetaPct(), 0.0001);
         assertEquals(Calificacion.EXCELENTE, r.calificacion());
         assertEquals(0, new BigDecimal("125.49").compareTo(r.cashFlowMensual()));
         assertEquals(5.104700, r.rocePct(), 0.0001);
@@ -337,5 +339,144 @@ class CalculadoraFinancieraPisoTest {
     void datosGastos_totalAnual_multiplicaComunidadPorDoce() {
         // 400 + 60*12 + 150 + 300 = 1570
         assertEquals(0, new BigDecimal("1570").compareTo(gastosA().totalAnual()));
+    }
+
+    // ── Fase 0 paso 3: casos que se usaron para comparar contra la
+    // implementación duplicada de RentabilidadController antes de unificarlas
+    // (EquivalenciaRentabilidadTest, temporal, ya eliminado). Confirmaron
+    // equivalencia total salvo en rentabilidadNetaPct, que aquí restaba la
+    // cuota de hipoteca y en RentabilidadController no — se corrigió este
+    // método para NO restarla (ver comentario en calcular()). Se conservan
+    // estos escenarios como cobertura permanente. ──────────────────────
+
+    @Test
+    void calcular_valoresTipicosConHipoteca() {
+        var adquisicion = new DatosAdquisicion(
+                BigDecimal.valueOf(200_000), BigDecimal.valueOf(12_000),
+                BigDecimal.valueOf(1500), BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.valueOf(5000), BigDecimal.valueOf(3800));
+        var hipoteca = new DatosHipoteca(true, BigDecimal.valueOf(160_000), BigDecimal.valueOf(3.5), 25);
+        var gastos = new DatosGastos(
+                BigDecimal.valueOf(1200), BigDecimal.valueOf(80), BigDecimal.valueOf(480), BigDecimal.valueOf(360));
+        Entrada entrada = new Entrada(adquisicion, hipoteca, gastos, BigDecimal.ZERO, BigDecimal.valueOf(900));
+
+        Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+        assertEquals(0, new BigDecimal("222300").compareTo(r.inversionTotal()));
+        assertEquals(801.00, r.cuotaMensualHipoteca().doubleValue(), 0.01);
+        assertEquals(4.8583, r.rentabilidadBrutaPct(), 0.001);
+        assertEquals(3.5088, r.rentabilidadNetaPct(), 0.001, "no debe restar la cuota de hipoteca");
+        assertEquals(-151.00, r.cashFlowMensual().doubleValue(), 0.01);
+    }
+
+    @Test
+    void calcular_hipotecaDesactivada_rentNetaCoincideConRentBrutaMenosGastos() {
+        var adquisicion = new DatosAdquisicion(
+                BigDecimal.valueOf(150_000), BigDecimal.valueOf(12_000),
+                BigDecimal.valueOf(1200), BigDecimal.ZERO,
+                BigDecimal.valueOf(2000), BigDecimal.ZERO, BigDecimal.ZERO);
+        var hipoteca = new DatosHipoteca(false, BigDecimal.ZERO, BigDecimal.valueOf(3.0), 20);
+        var gastos = new DatosGastos(
+                BigDecimal.valueOf(720), BigDecimal.valueOf(50), BigDecimal.valueOf(240), BigDecimal.valueOf(720));
+        Entrada entrada = new Entrada(adquisicion, hipoteca, gastos, BigDecimal.ZERO, BigDecimal.valueOf(700));
+
+        Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+        assertEquals(0, new BigDecimal("165200").compareTo(r.inversionTotal()));
+        assertEquals(0, BigDecimal.ZERO.compareTo(r.cuotaMensualHipoteca()));
+        assertEquals(5.0847, r.rentabilidadBrutaPct(), 0.001);
+        assertEquals(3.7046, r.rentabilidadNetaPct(), 0.001);
+        assertEquals(510.00, r.cashFlowMensual().doubleValue(), 0.01);
+    }
+
+    @Test
+    void calcular_plazoExtremoUnAnio_cuotaAltaYCashFlowNegativo() {
+        var adquisicion = new DatosAdquisicion(
+                BigDecimal.valueOf(120_000), BigDecimal.valueOf(12_000),
+                BigDecimal.valueOf(1000), BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.valueOf(2000));
+        var hipoteca = new DatosHipoteca(true, BigDecimal.valueOf(72_000), BigDecimal.valueOf(4.0), 1);
+        var gastos = new DatosGastos(
+                BigDecimal.valueOf(600), BigDecimal.valueOf(60), BigDecimal.valueOf(240), BigDecimal.valueOf(240));
+        Entrada entrada = new Entrada(adquisicion, hipoteca, gastos, BigDecimal.ZERO, BigDecimal.valueOf(650));
+
+        Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+        assertEquals(0, new BigDecimal("135000").compareTo(r.inversionTotal()));
+        assertEquals(6130.79, r.cuotaMensualHipoteca().doubleValue(), 0.01);
+        assertEquals(4.4444, r.rentabilidadNetaPct(), 0.001);
+        assertEquals(-5630.79, r.cashFlowMensual().doubleValue(), 0.01);
+    }
+
+    @Test
+    void calcular_plazoExtremoCuarentaAnios_cuotaBaja() {
+        var adquisicion = new DatosAdquisicion(
+                BigDecimal.valueOf(300_000), BigDecimal.valueOf(30_000),
+                BigDecimal.valueOf(2000), BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.valueOf(5000));
+        var hipoteca = new DatosHipoteca(true, BigDecimal.valueOf(270_000), BigDecimal.valueOf(3.2), 40);
+        var gastos = new DatosGastos(
+                BigDecimal.valueOf(1440), BigDecimal.valueOf(100), BigDecimal.valueOf(600), BigDecimal.valueOf(600));
+        Entrada entrada = new Entrada(adquisicion, hipoteca, gastos, BigDecimal.ZERO, BigDecimal.valueOf(1100));
+
+        Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+        assertEquals(0, new BigDecimal("337000").compareTo(r.inversionTotal()));
+        assertEquals(997.94, r.cuotaMensualHipoteca().doubleValue(), 0.01);
+        assertEquals(2.7774, r.rentabilidadNetaPct(), 0.001);
+    }
+
+    @Test
+    void calcular_interesCero_cuotaEsDivisionLinealYRentNetaCorrecta() {
+        var adquisicion = new DatosAdquisicion(
+                BigDecimal.valueOf(180_000), BigDecimal.valueOf(10_800),
+                BigDecimal.valueOf(1500), BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.valueOf(3200));
+        var hipoteca = new DatosHipoteca(true, BigDecimal.valueOf(126_000), BigDecimal.ZERO, 15);
+        var gastos = new DatosGastos(
+                BigDecimal.valueOf(960), BigDecimal.valueOf(70), BigDecimal.valueOf(360), BigDecimal.valueOf(360));
+        Entrada entrada = new Entrada(adquisicion, hipoteca, gastos, BigDecimal.ZERO, BigDecimal.valueOf(800));
+
+        Resultado r = CalculadoraFinancieraPiso.calcular(entrada);
+
+        assertEquals(700.00, r.cuotaMensualHipoteca().doubleValue(), 0.01, "126000/180 meses = 700.00");
+        assertEquals(3.6215, r.rentabilidadNetaPct(), 0.001);
+    }
+
+    /** Mismo escenario base con distinto ITP (Madrid/Cataluña/País Vasco) — sin hipoteca, para aislar el efecto del ITP. */
+    private Resultado calcularConItp(BigDecimal itpPagado) {
+        var adquisicion = new DatosAdquisicion(
+                BigDecimal.valueOf(250_000), itpPagado,
+                BigDecimal.valueOf(1800), BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.valueOf(2000), BigDecimal.valueOf(3500));
+        var hipoteca = new DatosHipoteca(false, BigDecimal.ZERO, BigDecimal.valueOf(3.0), 20);
+        var gastos = new DatosGastos(
+                BigDecimal.valueOf(1080), BigDecimal.valueOf(90), BigDecimal.valueOf(420), BigDecimal.valueOf(600));
+        Entrada entrada = new Entrada(adquisicion, hipoteca, gastos, BigDecimal.ZERO, BigDecimal.valueOf(1000));
+        return CalculadoraFinancieraPiso.calcular(entrada);
+    }
+
+    @Test
+    void calcular_itpMadrid_seisPorCiento() {
+        Resultado r = calcularConItp(BigDecimal.valueOf(15_000)); // 250000 * 6%
+        assertEquals(0, new BigDecimal("272300").compareTo(r.inversionTotal()));
+        assertEquals(4.4069, r.rentabilidadBrutaPct(), 0.001);
+        assertEquals(3.2391, r.rentabilidadNetaPct(), 0.001);
+    }
+
+    @Test
+    void calcular_itpCataluna_diezPorCiento() {
+        Resultado r = calcularConItp(BigDecimal.valueOf(25_000)); // 250000 * 10%
+        assertEquals(0, new BigDecimal("282300").compareTo(r.inversionTotal()));
+        assertEquals(4.2508, r.rentabilidadBrutaPct(), 0.001);
+        assertEquals(3.1243, r.rentabilidadNetaPct(), 0.001);
+    }
+
+    @Test
+    void calcular_itpPaisVasco_cuatroPorCiento() {
+        Resultado r = calcularConItp(BigDecimal.valueOf(10_000)); // 250000 * 4%
+        assertEquals(0, new BigDecimal("267300").compareTo(r.inversionTotal()));
+        assertEquals(4.4893, r.rentabilidadBrutaPct(), 0.001);
+        assertEquals(3.2997, r.rentabilidadNetaPct(), 0.001);
     }
 }
