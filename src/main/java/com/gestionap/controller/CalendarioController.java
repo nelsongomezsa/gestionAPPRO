@@ -131,6 +131,16 @@ public class CalendarioController implements Initializable {
         }
     }
 
+    /**
+     * NO usa {@code com.gestionap.service.VencimientoContrato} a propósito.
+     * La ventana de días 1-5 del mes de aquí abajo es una regla de PAGOS —
+     * cuándo se espera que se cobre la mensualidad de un contrato ya
+     * activo — no de vencimiento del contrato en sí (cuándo termina el
+     * contrato). Ambas devuelven cadenas como "VENCIDO", pero son dos
+     * conceptos de dominio distintos que hablan de fechas distintas
+     * (fecha de cobro esperado vs. fecha de fin de contrato). No unificar
+     * esto con VencimientoContrato aunque el nombre se parezca.
+     */
     private String calcularEstado(int dia, LocalDate fecha, LocalDate hoy,
                                   List<Pago> pagosDia, boolean hayContratos, boolean hayContratosImpagados) {
         if (!pagosDia.isEmpty())                        return "PAGADO";
