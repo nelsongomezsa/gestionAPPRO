@@ -13,8 +13,10 @@ import java.math.RoundingMode;
  * javafx.*: toma números, devuelve números — no sabe nada de diálogos,
  * TextFields ni Labels.
  *
- * <p>Replica exactamente el comportamiento del cálculo original, incluida
- * una particularidad: los campos {@code rentabilidadBrutaPct},
+ * <p>Replica el comportamiento del cálculo original de AnalisisPisosController,
+ * con una corrección deliberada: {@code rentabilidadNetaPct} no resta la
+ * cuota de hipoteca (ver comentario en {@link #calcular}). Incluye además
+ * una particularidad heredada del original: los campos {@code rentabilidadBrutaPct},
  * {@code rentabilidadNetaPct} y {@code calificacion} vienen {@code null}
  * cuando {@code inversionTotal <= 0} (no son calculables), y
  * {@code rocePct} viene {@code null} cuando {@code capitalPropio <= 0}, y
@@ -88,7 +90,6 @@ public final class CalculadoraFinancieraPiso {
         BigDecimal totalGastosAnuales = e.gastos().totalAnual();
 
         BigDecimal ingresosAnuales = e.ingresosMes().multiply(BigDecimal.valueOf(12));
-        BigDecimal hipAnual = cuota.multiply(BigDecimal.valueOf(12));
         BigDecimal importeHipEfectivo = importeHipotecaEfectivo(e.hipoteca().activa(), e.hipoteca().importe());
         BigDecimal capitalPropio = invTotal.subtract(importeHipEfectivo);
 
@@ -98,7 +99,18 @@ public final class CalculadoraFinancieraPiso {
         if (invTotal.compareTo(BigDecimal.ZERO) > 0) {
             rentBruta = ingresosAnuales.divide(invTotal, 6, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100)).doubleValue();
-            rentNeta = ingresosAnuales.subtract(totalGastosAnuales).subtract(hipAnual)
+            // Rentabilidad neta = (ingresos - gastos operativos) / inversión total.
+            // NO resta la cuota de hipoteca: es una métrica "antes de financiación",
+            // comparable entre compra al contado y apalancada — la financiación ya
+            // se refleja por separado en cashFlowMensual y en rocePct (cash-on-cash
+            // sobre capitalPropio). Antes de esta corrección (2026-08-11, al unificar
+            // con la implementación duplicada de RentabilidadController) sí se
+            // restaba la hipoteca aquí mientras se dividía entre la inversión TOTAL
+            // (no el capital propio): mezclaba un numerador apalancado con un
+            // denominador no apalancado, dando valores absurdos con plazos cortos o
+            // financiación alta (p. ej. -50% con un plazo de amortización de 1 año).
+            // Casos de referencia en CalculadoraFinancieraPisoTest ("Fase 0 paso 3").
+            rentNeta = ingresosAnuales.subtract(totalGastosAnuales)
                     .divide(invTotal, 6, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100)).doubleValue();
             calificacion = rentBruta > 7 ? Calificacion.EXCELENTE
