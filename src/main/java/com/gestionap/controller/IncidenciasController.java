@@ -7,7 +7,6 @@ import com.gestionap.dao.InquilinoDAO;
 import com.gestionap.model.Habitacion;
 import com.gestionap.model.Incidencia;
 import com.gestionap.model.Incidencia.Estado;
-import com.gestionap.model.Incidencia.Prioridad;
 import com.gestionap.model.Inquilino;
 import com.gestionap.utils.Session;
 import javafx.application.Platform;

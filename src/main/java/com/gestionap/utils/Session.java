@@ -17,5 +17,4 @@ public class Session {
     public void iniciarSesion(Usuario usuario) { this.usuarioActual = usuario; }
     public void cerrarSesion() { this.usuarioActual = null; }
     public Usuario getUsuarioActual() { return usuarioActual; }
-    public boolean estaLogueado() { return usuarioActual != null; }
 }
