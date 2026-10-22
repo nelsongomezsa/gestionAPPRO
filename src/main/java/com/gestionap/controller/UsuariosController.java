@@ -180,6 +180,11 @@ public class UsuariosController implements Initializable {
     private void cambiarRol() {
         Usuario sel = tablaUsuarios.getSelectionModel().getSelectedItem();
         if (sel == null) { mostrarAviso("Selecciona un usuario."); return; }
+        if (sel.getRol() == Usuario.Rol.inquilino) {
+            // Ascender a un inquilino le daría acceso completo al escritorio.
+            mostrarAviso("Las cuentas de inquilino se gestionan desde la app móvil y no pueden cambiar de rol.");
+            return;
+        }
         ChoiceDialog<String> dlg = new ChoiceDialog<>(sel.getRol().name(), "usuario", "admin");
         dlg.setTitle("Cambiar Rol");
         dlg.setHeaderText("Rol de " + sel.getNombre());

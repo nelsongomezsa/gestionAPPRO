@@ -2,7 +2,12 @@ package com.gestionap.model;
 
 public class Usuario {
 
-    public enum Rol { admin, usuario }
+    /**
+     * inquilino: cuentas creadas desde la app móvil (gestionapro-api) con un
+     * código de invitación. No pueden entrar en la app de escritorio (ver
+     * LoginController); está aquí solo para que leer esas filas no falle.
+     */
+    public enum Rol { admin, usuario, inquilino }
 
     private int    idUsuario;
     private String nombre;
