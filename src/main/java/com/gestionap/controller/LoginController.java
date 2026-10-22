@@ -58,6 +58,12 @@ public class LoginController implements Initializable {
                 return;
             }
 
+            if (usuario.getRol() == Usuario.Rol.inquilino) {
+                mostrarError("Las cuentas de inquilino solo pueden acceder desde la app móvil.");
+                txtPassword.clear();
+                return;
+            }
+
             Session.getInstance().iniciarSesion(usuario);
             abrirPanelPrincipal();
 
