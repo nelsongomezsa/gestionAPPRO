@@ -18,7 +18,7 @@ Aplicación de escritorio para gestionar el alquiler de habitaciones en pisos co
 
 Muchos propietarios de pisos compartidos llevan sus alquileres con papel o Excel, lo que acaba generando líos: pagos que no cuadran, incidencias sin registrar, contratos que vencen sin avisar.
 
-**GestionAp** resuelve eso, Con esta aplicación puedes:
+**GestionAp** resuelve eso. Con esta aplicación puedes:
 
 - Ver de un vistazo qué habitaciones están libres, alquiladas o en mantenimiento
 - Registrar inquilinos y asociarlos a sus habitaciones con un contrato
