@@ -8,3 +8,4 @@ target/
 
 # Credenciales locales — usa database.properties.example como plantilla
 src/main/resources/database.properties
+out/
