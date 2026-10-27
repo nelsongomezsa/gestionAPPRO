@@ -2,6 +2,7 @@
 
 **Aplicación de escritorio para gestionar el alquiler de habitaciones en pisos compartidos: inquilinos, contratos, pagos, incidencias y rentabilidad de cada piso, en un solo sitio.**
 
+[![CI](https://github.com/nelsongomezsa/gestionAPPRO/actions/workflows/ci.yml/badge.svg)](https://github.com/nelsongomezsa/gestionAPPRO/actions/workflows/ci.yml)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![JavaFX](https://img.shields.io/badge/JavaFX-21-0095D5?logo=java&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-4479A1?logo=mysql&logoColor=white)
