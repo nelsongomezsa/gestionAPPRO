@@ -1,159 +1,114 @@
 # GestionAp PRO
 
-<div align="center">
+**Aplicación de escritorio para gestionar el alquiler de habitaciones en pisos compartidos: inquilinos, contratos, pagos, incidencias y rentabilidad de cada piso, en un solo sitio.**
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=20&pause=1200&color=2EE6A6&center=true&vCenter=true&width=560&lines=App+de+gesti%C3%B3n+de+alquiler+de+habitaciones;Java+17+%2B+JavaFX+%2B+MySQL;Arquitectura+en+capas+%7C+JDBC+puro)](https://github.com/nelsongomezsa/gestionAPPRO)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-0095D5?logo=java&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-4479A1?logo=mysql&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-C71A36?logo=apachemaven&logoColor=white)
+![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-yellow)
 
-![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white) ![JavaFX](https://img.shields.io/badge/JavaFX-UI-0095D5?style=for-the-badge&logo=java&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![Maven](https://img.shields.io/badge/Maven-3.9%2B-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white) ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
-
-</div>
-
-Proyecto Intermodular de 1º DAM · Prometeo by The Power
-
-Aplicación de escritorio para gestionar el alquiler de habitaciones en pisos compartidos, desarrollada en Java con conexión a base de datos MySQL.
+> **English summary:** Desktop app (Java 21, JavaFX, MySQL, plain JDBC) to manage shared-flat room rentals: tenants, contracts, payments, maintenance issues and per-flat profitability. Layered architecture (DAO / service / controller), BCrypt passwords, PDF contracts with iText, SEPA payment QR codes and 189 JUnit 5 tests, including DAO tests on an in-memory H2 database.
 
 ---
 
-## ¿Para qué sirve?
+## Qué resuelve
 
-Muchos propietarios de pisos compartidos llevan sus alquileres con papel o Excel, lo que acaba generando líos: pagos que no cuadran, incidencias sin registrar, contratos que vencen sin avisar.
+Muchos propietarios de pisos compartidos llevan los alquileres con papel o Excel: pagos que no cuadran, incidencias sin registrar y contratos que vencen sin avisar. GestionAp PRO lo reúne todo en una aplicación con login y roles.
 
-**GestionAp** resuelve eso. Con esta aplicación puedes:
+## Funcionalidades
 
-- Ver de un vistazo qué habitaciones están libres, alquiladas o en mantenimiento
-- Registrar inquilinos y asociarlos a sus habitaciones con un contrato
-- Llevar el control de pagos mensuales y saber quién debe qué
-- Guardar y hacer seguimiento de incidencias reportadas por los inquilinos
-- Exportar los datos a XML para tener un registro estructurado
+- **Panel principal** con ingresos del mes, ocupación y avisos de contratos que vencen.
+- **Pisos y habitaciones**: estado de cada habitación (libre, alquilada, en mantenimiento) y ficha de cada piso.
+- **Inquilinos y contratos**: alta de inquilinos, contratos por habitación y generación del contrato en **PDF** (iText 7).
+- **Pagos**: control mensual de quién ha pagado, y **código QR de transferencia SEPA** (estándar EPC) por inquilino. El IBAN del QR es de ejemplo.
+- **Incidencias** con su coste de reparación.
+- **Rentabilidad**: rentabilidad bruta y neta, cash flow, cuota de hipoteca, ROCE, capital propio, plusvalía y PER de cada piso; calculadora con el ITP de cada comunidad autónoma.
+- **Calendario y estadísticas** con gráficos.
+- **Usuarios y roles** (administrador y usuario), contraseñas con **BCrypt** y envío de emails a inquilinos.
+- **XML + XSD**: los contratos están modelados en XML con un esquema que valida sus reglas (ver [`docs/README_xml.md`](docs/README_xml.md)).
 
----
+## Stack
 
-## Tecnologías
-
-| Herramienta | Para qué se usa |
+| Capa | Tecnología |
 |---|---|
-| Java 17 | Lenguaje principal de la aplicación |
-| JavaFX | Interfaz gráfica de usuario |
-| MySQL 8 | Base de datos local |
-| JDBC puro | Conexión entre Java y MySQL, sin ORM |
-| XML + XSD | Exportación de datos y validación |
-| Maven 3.9+ | Gestión de dependencias y compilación |
-| Git + GitHub | Control de versiones |
+| Lenguaje | Java 21 |
+| Interfaz | JavaFX 21 + FXML + CSS (tema claro y oscuro) |
+| Datos | MySQL 8 / MariaDB, JDBC puro con pool HikariCP |
+| Seguridad | BCrypt (jBCrypt), con migración de hashes SHA-256 antiguos |
+| Documentos | iText 7 (PDF), ZXing (QR), JavaMail |
+| Tests | JUnit 5 + H2 en modo MySQL para los DAO |
+| Build | Maven, con empaquetado nativo preparado para jpackage |
 
----
+## Arquitectura
+
+```mermaid
+flowchart LR
+    UI["Vistas FXML<br/>15 pantallas"] --> C["controller<br/>JavaFX"]
+    C --> S["service<br/>cálculos y reglas"]
+    C --> D["dao<br/>JDBC + HikariCP"]
+    S --> D
+    D --> DB[("MySQL / MariaDB")]
+    C --> U["utils<br/>PDF · QR · email · BCrypt"]
+```
+
+Los cálculos financieros y las reglas de vencimiento de contratos están en `service/`, separados de la interfaz para poder probarlos sin abrir ventanas.
 
 ## Cómo ejecutarlo
 
-### Requisitos previos
+Requisitos: JDK 21, Maven 3.9+ y MySQL 8 o MariaDB.
 
-Necesitas tener instalado en tu máquina:
-- Java 17 JDK (recomendado [Temurin de Adoptium](https://adoptium.net))
-- Maven 3.9+
-- MySQL 8 o MariaDB 10.6+
+1. **Clona el repositorio**
+   ```bash
+   git clone https://github.com/nelsongomezsa/gestionAPPRO.git && cd gestionAPPRO
+   ```
+2. **Prepara la base de datos** con los scripts de [`sql/`](sql/): `base_datos.sql` crea las tablas principales y el resto añade usuarios, notificaciones, actividad, datos financieros y datos de demo. Después copia la plantilla de conexión y pon tus credenciales:
+   ```bash
+   cp src/main/resources/database.properties.example src/main/resources/database.properties
+   ```
+3. **Arranca la aplicación**
+   ```bash
+   mvn javafx:run
+   ```
 
-### Pasos
+> `database.properties` está en el `.gitignore`: tus credenciales nunca se suben al repositorio.
 
-**1. Clona el repositorio**
+## Tests
+
 ```bash
-git clone https://github.com/nelsongomezsa/gestionAPPRO.git
-cd gestionAPPRO
+mvn test
 ```
 
-**2. Crea la base de datos**
-```bash
-mysql -u root -p < sql/schema.sql
-mysql -u root -p < sql/datos.sql
-```
+**189 tests** con JUnit 5, sin necesidad de MySQL:
 
-**3. Configura la conexión**
+- `service/`: calculadora financiera, vencimiento de contratos, historial de navegación y rutas de notificación.
+- `dao/`: consultas reales contra una base **H2 en memoria en modo MySQL**.
+- `model/` y `utils/`: reglas de las entidades y hash de contraseñas.
 
-Copia la plantilla y rellena tus credenciales:
-```bash
-cp src/main/resources/database.properties.example src/main/resources/database.properties
-```
-```properties
-db.url=jdbc:mysql://localhost:3306/gestion_alquileres_pro?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-db.user=root
-db.password=tu_contraseña
-```
-> `database.properties` está en el `.gitignore` — nunca se sube al repositorio. Solo se versiona `database.properties.example`, sin credenciales reales.
+## Qué aprendí
 
-**4. Compila y arranca**
-```bash
-mvn clean package
-mvn javafx:run
-```
+- A separar la lógica de la interfaz: sacar los cálculos financieros de los controladores a `CalculadoraFinancieraPiso` hizo posible probarlos con 35 tests.
+- A probar el acceso a datos sin tocar la base real, con H2 en modo MySQL.
+- A cuidar los recursos: el pool de conexiones no se cerraba al salir de la app, y lo corregí.
+- A migrar contraseñas de SHA-256 a BCrypt sin obligar a nadie a cambiarlas.
 
----
+## Próximos pasos
 
-## Estructura del proyecto
+- Unificar los scripts de `sql/` en una sola migración: ahora usan dos nombres de base de datos (`gestion_alquileres` y `gestion_alquileres_pro`).
+- Automatizar el empaquetado nativo con jpackage (`.dmg` / `.exe`).
+- Añadir capturas de la versión actual a este README.
 
-```
-gestionAPPRO/
-├── src/
-│   └── main/
-│       ├── java/com/gestionap/
-│       │   ├── Main.java           # Arranque de la aplicación
-│       │   ├── model/              # Clases de dominio: Piso, Habitacion, Inquilino...
-│       │   ├── dao/                # Acceso a la base de datos con JDBC
-│       │   ├── service/            # Lógica de negocio
-│       │   ├── controller/         # Controladores de la interfaz JavaFX
-│       │   └── utils/              # Exportación XML y validación XSD
-│       └── resources/
-│           ├── fxml/               # Pantallas de la interfaz
-│           ├── css/                # Estilos visuales
-│           └── database.properties # Credenciales (NO subir — ver .gitignore)
-├── sql/
-│   ├── schema.sql                  # Creación de tablas
-│   ├── datos.sql                   # Datos de prueba
-│   └── consultas.sql               # Consultas del sistema
-├── xml/
-│   ├── datos.xml                   # Exportación de datos
-│   └── esquema.xsd                 # Validación XML
-├── diagrams/
-│   └── er_diagram.png              # Diagrama Entidad–Relación
-├── docs/
-│   ├── README_bbdd.md              # Documentación base de datos (0484)
-│   ├── README_xml.md               # Documentación XML/XSD (0373)
-│   ├── sistemas/                   # Informe técnico del entorno (0483)
-│   └── empleabilidad/              # Perfil profesional (1709)
-├── .gitignore
-├── pom.xml
-└── README.md
-```
+## Proyectos relacionados
 
----
+- [GestionAp PRO API + iOS](https://github.com/nelsongomezsa/gestionapro): API REST con Spring Security y app iOS sobre la misma base de datos.
+- [GestionAP](https://github.com/nelsongomezsa/GestionAP): la versión inicial, de 1.º de DAM.
 
-## Qué cubre cada módulo
+## Contexto
 
-| Módulo | Qué aporta este proyecto |
-|---|---|
-| 0484 Bases de Datos | Diseño E/R, modelo relacional, scripts SQL y consultas reales |
-| 0485 Programación | Aplicación Java funcional con CRUD completo vía JDBC |
-| 0373 Lenguajes de Marcas | Exportación de contratos a XML validado con XSD |
-| 0483 Sistemas Informáticos | Informe del entorno de ejecución e instalación |
-| 0487 Entornos de Desarrollo | Repositorio GitHub organizado con historial de commits coherente |
-| MPO Ampliación | Arquitectura en capas, diseño orientado a objetos, código limpio |
-
----
-
-## Si algo falla
-
-| Error | Causa probable | Solución |
-|---|---|---|
-| No conecta con la BD | Credenciales incorrectas | Revisa `database.properties` |
-| `java` no reconocido | JDK no está en el PATH | Configura la variable de entorno |
-| Error al compilar | Dependencias no descargadas | Ejecuta `mvn clean install` con internet |
-| La ventana no abre | JavaFX no está cargado | Usa `mvn javafx:run`, no `java -jar` |
-
----
+Empezó como Proyecto Intermodular de 1.º de DAM en Prometeo by thePower (Bases de Datos, Programación, Lenguajes de Marcas, Sistemas Informáticos y Entornos de Desarrollo) y lo he seguido ampliando por mi cuenta.
 
 ## Autor
 
-**Nelson Gomez Sanchez** · 1º DAM · Prometeo by The Power
+**Nelson Gómez Sánchez** · Estudiante de DAM y del Máster en Data & Analytics · [nelsongomezsa.github.io](https://nelsongomezsa.github.io) · [LinkedIn](https://www.linkedin.com/in/nelson-gómez-sánchez)
 
----
-
-## Licencia
-
-[MIT](https://opensource.org/licenses/MIT)
+Licencia [MIT](LICENSE).
