@@ -56,7 +56,9 @@ Los cálculos financieros y las reglas de vencimiento de contratos están en `se
 
 ## Cómo ejecutarlo
 
-Requisitos: JDK 21, Maven 3.9+ y MySQL 8 o MariaDB.
+**Descarga para macOS:** hay un `.dmg` en [Releases](https://github.com/nelsongomezsa/gestionAPPRO/releases/tag/v1.0.0). Necesita igualmente una base de datos MySQL o MariaDB.
+
+Para ejecutarlo desde el código: JDK 21, Maven 3.9+ y MySQL 8 o MariaDB.
 
 1. **Clona el repositorio**
    ```bash
