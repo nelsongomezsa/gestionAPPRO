@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -91,7 +92,7 @@ public class EstadisticasController implements Initializable {
             series.setName("Ingresos");
             datos.forEach((mes, total) ->
                     series.getData().add(new XYChart.Data<>(mes, total)));
-            chartLineas.getData().setAll(series);
+            chartLineas.getData().setAll(List.of(series));
         } catch (Exception ex) {
             chartLineas.setTitle("Sin datos: " + ex.getMessage());
         }
@@ -112,7 +113,7 @@ public class EstadisticasController implements Initializable {
             series.setName("Incidencias");
             datos.forEach((mes, cnt) ->
                     series.getData().add(new XYChart.Data<>(mes, cnt)));
-            chartIncidencias.getData().setAll(series);
+            chartIncidencias.getData().setAll(List.of(series));
         } catch (Exception ex) {
             chartIncidencias.setTitle("Sin datos: " + ex.getMessage());
         }

@@ -33,7 +33,7 @@ public class CalendarioController implements Initializable {
     private YearMonth     mesActual;
 
     private static final String[]         DIAS  = {"LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"};
-    private static final DateTimeFormatter FMT   = DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "ES"));
+    private static final DateTimeFormatter FMT   = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.of("es", "ES"));
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {

@@ -43,7 +43,7 @@ public class ContratoGenerator {
 
     // ── Formatos de fecha ────────────────────────────────────────
     private static final DateTimeFormatter FMT_ES =
-            DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", new Locale("es", "ES"));
+            DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale.of("es", "ES"));
     private static final DateTimeFormatter FMT_FILE =
             DateTimeFormatter.ofPattern("yyyyMMdd");
 

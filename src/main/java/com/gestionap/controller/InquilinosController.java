@@ -284,7 +284,7 @@ public class InquilinosController implements Initializable {
             return;
         }
 
-        String mes      = YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "ES")));
+        String mes      = YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.of("es", "ES")));
         String concepto = "Alquiler Hab." + contrato.getNumeroHabitacion()
                         + " " + sel.getNombreCompleto() + " " + mes;
         String importe  = "EUR" + contrato.getPrecioMensual().setScale(2).toPlainString();

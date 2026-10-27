@@ -213,7 +213,7 @@ public class DashboardController implements Initializable {
             XYChart.Data<String, Number> d = new XYChart.Data<>(mes, total);
             series.getData().add(d);
         });
-        chartIngresos.getData().setAll(series);
+        chartIngresos.getData().setAll(List.of(series));
 
         // Color de barras: último mes en acento, resto en azul
         Platform.runLater(() -> {
@@ -377,7 +377,7 @@ public class DashboardController implements Initializable {
     private String generarPdfEnDisco(YearMonth mes, List<Contrato> contratos, List<Pago> pagos,
                                      List<Incidencia> incidencias, int totalHabs,
                                      int alquiladas, double ocupacion) throws Exception {
-        String nombreMes = mes.format(DateTimeFormatter.ofPattern("MMMM_yyyy", new Locale("es", "ES")));
+        String nombreMes = mes.format(DateTimeFormatter.ofPattern("MMMM_yyyy", Locale.of("es", "ES")));
         String path = System.getProperty("user.home") + "/Desktop/Informe_" + nombreMes + ".pdf";
 
         DeviceRgb ACCENT  = new DeviceRgb(108, 99, 255);
@@ -391,7 +391,7 @@ public class DashboardController implements Initializable {
         Document doc = new Document(pdfDoc, PageSize.A4);
         doc.setMargins(50, 50, 50, 50);
 
-        String tituloMes = mes.format(DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "ES")));
+        String tituloMes = mes.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.of("es", "ES")));
         tituloMes = Character.toUpperCase(tituloMes.charAt(0)) + tituloMes.substring(1);
 
         // ── Portada ──────────────────────────────────────────────
