@@ -1,6 +1,8 @@
-# GestionAp PRO
+# GestionAp PRO · versión de escritorio
 
 **Aplicación de escritorio para gestionar el alquiler de habitaciones en pisos compartidos: inquilinos, contratos, pagos, incidencias y rentabilidad de cada piso, en un solo sitio.**
+
+> La versión actual, con API REST en Spring Boot y app nativa para iPhone, está en **[gestionapro](https://github.com/nelsongomezsa/gestionapro)**. Esta versión de escritorio sigue funcionando sobre la misma base de datos y se puede [descargar para macOS](https://github.com/nelsongomezsa/gestionAPPRO/releases/download/v1.0.0/GestionAp-1.0.0.dmg).
 
 [![CI](https://github.com/nelsongomezsa/gestionAPPRO/actions/workflows/ci.yml/badge.svg)](https://github.com/nelsongomezsa/gestionAPPRO/actions/workflows/ci.yml)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
@@ -112,6 +114,6 @@ Empezó como Proyecto Intermodular de 1.º de DAM en Prometeo by thePower (Bases
 
 ## Autor
 
-**Nelson Gómez Sánchez** · Estudiante de DAM y del Máster en Data & Analytics · [nelsongomezsa.github.io](https://nelsongomezsa.github.io) · [LinkedIn](https://www.linkedin.com/in/nelson-gómez-sánchez)
+**Nelson Gómez Sánchez** · Desarrollo de software y datos · Java, SQL y Python · Buscando prácticas en IT en Madrid desde febrero de 2027 · [nelsongomezsa.github.io](https://nelsongomezsa.github.io) · [LinkedIn](https://www.linkedin.com/in/nelson-gómez-sánchez)
 
 Licencia [MIT](LICENSE).
