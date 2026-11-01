@@ -16,7 +16,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <javafx.version>21</javafx.version>
-        <mysql.version>8.0.33</mysql.version>
+        <!-- 8.4 LTS: corrige la CVE de 8.0.33 y trae protobuf parcheado -->
+        <mysql.version>8.4.0</mysql.version>
+        <itext.version>7.2.6</itext.version>
+        <bouncycastle.version>1.86</bouncycastle.version>
     </properties>
 
     <!--
@@ -61,6 +64,17 @@
             </properties>
         </profile>
     </profiles>
+
+    <!-- protobuf llega con mysql-connector-j 8.4.0 (3.25.1, con CVE): último parche de la misma rama -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.9</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- MySQL -->
@@ -117,12 +131,27 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>kernel</artifactId>
-            <version>7.2.5</version>
+            <version>${itext.version}</version>
+            <!-- iText 7.2 trae BouncyCastle 1.70 (jdk15on, sin parches): se cambia por jdk18on, mismos paquetes. -->
+            <exclusions>
+                <exclusion><groupId>org.bouncycastle</groupId><artifactId>bcprov-jdk15on</artifactId></exclusion>
+                <exclusion><groupId>org.bouncycastle</groupId><artifactId>bcpkix-jdk15on</artifactId></exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>layout</artifactId>
-            <version>7.2.5</version>
+            <version>${itext.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
         </dependency>
 
         <!-- ZXing — generación de códigos QR -->

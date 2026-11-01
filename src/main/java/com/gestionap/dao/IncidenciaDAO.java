@@ -148,16 +148,18 @@ public class IncidenciaDAO {
     private void cargarCostesEnLista(List<Incidencia> lista) {
         if (lista.isEmpty()) return;
         try {
-            String ids = lista.stream()
-                    .map(i -> String.valueOf(i.getIdIncidencia()))
+            String marcadores = lista.stream()
+                    .map(i -> "?")
                     .collect(Collectors.joining(","));
             String sql = "SELECT id_incidencia, COALESCE(coste_reparacion, 0) AS coste " +
-                         "FROM Incidencias WHERE id_incidencia IN (" + ids + ")";
+                         "FROM Incidencias WHERE id_incidencia IN (" + marcadores + ")";
             try (Connection con = getConexion();
-                 PreparedStatement ps = con.prepareStatement(sql);
-                 ResultSet rs = ps.executeQuery()) {
+                 PreparedStatement ps = con.prepareStatement(sql)) {
+                for (int i = 0; i < lista.size(); i++) ps.setInt(i + 1, lista.get(i).getIdIncidencia());
                 Map<Integer, BigDecimal> costes = new HashMap<>();
-                while (rs.next()) costes.put(rs.getInt(1), rs.getBigDecimal(2));
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) costes.put(rs.getInt(1), rs.getBigDecimal(2));
+                }
                 for (Incidencia inc : lista)
                     inc.setCosteReparacion(costes.getOrDefault(inc.getIdIncidencia(), BigDecimal.ZERO));
             }
